@@ -53,6 +53,16 @@ function createSvg() {
             toAdd.appendChild(node);
         },
 
+        addCircle: function(toAdd, x, y, radius, stroke) {
+            var node = me.createNode("circle");
+
+            node.setAttribute("cx", x);
+            node.setAttribute("cy", y);
+            node.setAttribute("r", radius);
+            node.setAttribute("stroke", stroke);
+            toAdd.appendChild(node);
+        },
+
         addPolygon: function(toAdd, points, stroke) {
             var node = me.createNode("polygon");
 

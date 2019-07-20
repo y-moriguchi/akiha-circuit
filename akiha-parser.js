@@ -70,6 +70,10 @@ function convertEngineerUnit(text) {
     }
 }
 
+function isNode(ch) {
+    return ch !== BOUND && /[\*\+]/.test(ch);
+}
+
 function quadro(inputString) {
     var TURN = [UP, RIGHT, DOWN, LEFT],
         input = inputString.split(/\r\n|\r|\n/),
@@ -225,7 +229,13 @@ function quadro(inputString) {
         },
 
         loopAdd: function() {
-            me.loops[me.loops.length - 1].push({ x: xNow, y: yNow });
+            var neighbor = 0;
+
+            neighbor += me.isWhitespace(1, 0) ? 0 : 1;
+            neighbor += me.isWhitespace(-1, 0) ? 0 : 1;
+            neighbor += me.isWhitespace(0, 1) ? 0 : 1;
+            neighbor += me.isWhitespace(0, -1) ? 0 : 1;
+            me.loops[me.loops.length - 1].push({ x: xNow, y: yNow, neighbor: neighbor });
             return me;
         },
 
@@ -305,14 +315,12 @@ function engine(quadro, initMachine) {
 }
 
 function akiha(input) {
-    var nodeCh = '*';
-
     var machineFindBorder = (function() {
         var me = {
             name: "findBorder",
 
             init: function(quadro) {
-                if(quadro.getChar() === nodeCh) {
+                if(isNode(quadro.getChar())) {
                     return new CallMachine(machineScanBorder, me.halt);
                 } else if(quadro.getChar() === BOUND) {
                     quadro.moveCrLf();
@@ -407,7 +415,7 @@ function akiha(input) {
             move: function(quadro) {
                 if(quadro.get().borderAuxStart) {
                     return machineBorder.init;
-                } else if(quadro.getChar() === nodeCh) {
+                } else if(isNode(quadro.getChar())) {
                     return new CallMachine(machineDrawBorderAux, me.turn);
                 } else if(quadro.getChar() !== BOUND) {
                     quadro.moveForward();
@@ -418,7 +426,6 @@ function akiha(input) {
             },
 
             turn: function(quadro) {
-                console.log(quadro.getPosition());
                 quadro.turnLeft().moveForward();
                 if(!quadro.isWhitespace()) {
                     return me.move;
@@ -535,7 +542,7 @@ function akiha(input) {
             name: "gridDown1",
 
             init: function (quadro) {
-                if(quadro.getChar() === nodeCh) {
+                if(isNode(quadro.getChar())) {
                     return new CallMachine(machineGridRight, me.next);
                 } else if(!quadro.get().borderY) {
                     return returnMachine;
@@ -559,7 +566,7 @@ function akiha(input) {
 
             init: function(quadro) {
                 quadro.get().gridX = true;
-                if(quadro.getChar() === nodeCh) {
+                if(isNode(quadro.getChar())) {
                     return new CallMachine(machineGridVertical, me.initNext);
                 } else {
                     quadro.move(RIGHT);
@@ -574,7 +581,7 @@ function akiha(input) {
 
             move: function(quadro) {
                 quadro.get().gridX = true;
-                if(quadro.getChar() === nodeCh) {
+                if(isNode(quadro.getChar())) {
                     return new CallMachine(machineGridVertical, me.next);
                 } else if(quadro.get().borderY) {
                     return returnMachine;
@@ -621,7 +628,7 @@ function akiha(input) {
 
             init: function(quadro) {
                 quadro.get().gridY = true;
-                if(quadro.getChar() === nodeCh) {
+                if(isNode(quadro.getChar())) {
                     return new CallMachine(machineGridHorizontal, me.next);
                 } else if(quadro.get().borderX) {
                     return returnMachine;
@@ -723,7 +730,7 @@ function akiha(input) {
                     if(cell.cellScanned === RIGHT) {
                         quadro.move(RIGHT);
                         return me.move;
-                    } else if(quadro.getChar() === nodeCh || !quadro.isWhitespace(1, 0)) {
+                    } else if(isNode(quadro.getChar()) || !quadro.isWhitespace(1, 0)) {
                         quadro.direction(RIGHT);
                         return new CallMachine(machineScanCellClockwise, me.next);
                     } else {
@@ -737,7 +744,7 @@ function akiha(input) {
 
                     if(cell.cellScanned === RIGHT) {
                         return me.next;
-                    } else if(quadro.getChar() === nodeCh && !quadro.isWhitespace(1, 0)) {
+                    } else if(isNode(quadro.getChar()) && !quadro.isWhitespace(1, 0)) {
                         quadro.direction(RIGHT);
                         return new CallMachine(machineScanCellClockwise, me.next);
                     } else {
@@ -777,7 +784,7 @@ function akiha(input) {
                 },
 
                 move: function(quadro) {
-                    if(quadro.getChar() === nodeCh) {
+                    if(isNode(quadro.getChar())) {
                         quadro.loopAdd();
                         quadro.get().cellScanned = quadro.getDirection();
                         quadro.moveForward();
@@ -790,7 +797,7 @@ function akiha(input) {
                 },
 
                 node: function(quadro) {
-                    if(quadro.getChar() === nodeCh) {
+                    if(isNode(quadro.getChar())) {
                         quadro.turnRight().moveForward();
                         if(quadro.isWhitespace()) {
                             quadro.moveBackward().turnLeft().moveForward();

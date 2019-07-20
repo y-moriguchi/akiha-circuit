@@ -16,6 +16,7 @@ var defaultOption = {
     batteryGap: 6,
     batteryLong: 20,
     batteryShort: 10,
+    jointRadius: 2,
     fontFamily: "sans-serif",
     fontSize: "10pt",
     textMargin: 14
@@ -34,6 +35,10 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
     me = {
         drawLine: function(point1, point2) {
             svg.addLine(canvas, getPoint(point1.x), getPoint(point1.y), getPoint(point2.x), getPoint(point2.y), opt.stroke);
+        },
+
+        drawJoint: function(point) {
+            svg.addCircle(canvas, getPoint(point.x), getPoint(point.y), opt.jointRadius, opt.stroke);
         },
 
         drawResistor: function(point1, point2) {

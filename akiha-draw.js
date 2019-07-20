@@ -11,7 +11,8 @@ var undef = void 0;
 function draw(loops, drawer) {
     var i,
         j,
-        drawn = [];
+        drawn = [],
+        drawnPoints = [];
 
     function isSamePosition(point1, point2) {
         return point1.x === point2.x && point1.y === point2.y;
@@ -29,9 +30,27 @@ function draw(loops, drawer) {
         return false;
     }
 
+    function isPointDrawn(point) {
+        var i;
+
+        for(i = 0; i < point.length; i++) {
+            if(isSamePosition(drawnPoints[i], point)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     for(i = 0; i < loops.length; i++) {
         for(j = 0; j < loops[i].length - 1; j++) {
             if(!isSideDrawn(loops[i][j], loops[i][j + 1])) {
+                if(!isPointDrawn(loops[i][j])) {
+                    drawnPoints.push(loops[i][j]);
+                    if(loops[i][j].neighbor > 2) {
+                        drawer.drawJoint(loops[i][j]);
+                    }
+                }
+
                 drawn.push([loops[i][j], loops[i][j + 1]]);
                 if(loops[i][j].voltage !== undef) {
                     drawer.drawBattery(loops[i][j], loops[i][j + 1]);
