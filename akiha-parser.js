@@ -158,6 +158,11 @@ function quadro(inputString) {
             return me.move(DOWN);
         },
 
+        moveInit: function() {
+            xNow = yNow = 1;
+            return me;
+        },
+
         direction: function(dir) {
             var i = 0;
 
@@ -221,6 +226,11 @@ function quadro(inputString) {
 
         loopAdd: function() {
             me.loops[me.loops.length - 1].push({ x: xNow, y: yNow });
+            return me;
+        },
+
+        loopRemove: function() {
+            me.loops.pop();
             return me;
         },
 
@@ -303,7 +313,7 @@ function akiha(input) {
 
             init: function(quadro) {
                 if(quadro.getChar() === nodeCh) {
-                    return new CallMachine(machineBorder, me.halt);
+                    return new CallMachine(machineScanBorder, me.halt);
                 } else if(quadro.getChar() === BOUND) {
                     quadro.moveCrLf();
                     return me.left;
@@ -328,11 +338,130 @@ function akiha(input) {
         return me;
     })();
 
+    var machineScanBorder = (function() {
+        var machineDrawBorderAux = (function() {
+            var me = {
+                name: "drawBorderAux",
+
+                init: function(quadro) {
+                    return new CallMachine(machineDrawBorderAux1(UP), me.down);
+                },
+
+                down: function(quadro) {
+                    return new CallMachine(machineDrawBorderAux1(DOWN), me.left);
+                },
+
+                left: function(quadro) {
+                    return new CallMachine(machineDrawBorderAux1(LEFT), me.right);
+                },
+
+                right: function(quadro) {
+                    return new CallMachine(machineDrawBorderAux1(RIGHT), me.done);
+                },
+
+                done: function(quadro) {
+                    return returnMachine;
+                }
+            };
+            return me;
+        })();
+
+        function machineDrawBorderAux1(direction) {
+            var me = {
+                name: "drawBorderAux1",
+
+                init: function(quadro) {
+                    if(quadro.getChar() === BOUND) {
+                        return returnMachine;
+                    } else {
+                        if(direction === UP || direction === DOWN) {
+                            quadro.get().borderAuxY = true;
+                        } else {
+                            quadro.get().borderAuxX = true;
+                        }
+                        quadro.move(direction);
+                        return me.init;
+                    }
+                }
+            };
+            return me;
+        }
+
+        var me = {
+            name: "scanBorder",
+
+            init: function(quadro) {
+                quadro.direction(RIGHT);
+                quadro.get().borderAuxStart = true;
+                return new CallMachine(machineDrawBorderAux, me.initMove);
+            },
+
+            initMove: function(quadro) {
+                quadro.moveForward();
+                if(quadro.isWhitespace()) {
+                    throw new Error("Unclosed circuit");
+                }
+                return me.move;
+            },
+
+            move: function(quadro) {
+                if(quadro.get().borderAuxStart) {
+                    return machineBorder.init;
+                } else if(quadro.getChar() === nodeCh) {
+                    return new CallMachine(machineDrawBorderAux, me.turn);
+                } else if(quadro.getChar() !== BOUND) {
+                    quadro.moveForward();
+                    return me.move;
+                } else {
+                    throw new Error("Unclosed circuit");
+                }
+            },
+
+            turn: function(quadro) {
+                console.log(quadro.getPosition());
+                quadro.turnLeft().moveForward();
+                if(!quadro.isWhitespace()) {
+                    return me.move;
+                }
+                quadro.moveBackward().turnRight().moveForward();
+                if(!quadro.isWhitespace()) {
+                    return me.move;
+                }
+                quadro.moveBackward().turnRight().moveForward();
+                if(!quadro.isWhitespace()) {
+                    return me.move;
+                }
+                throw new Error("Unclosed circuit");
+            }
+        };
+        return me;
+    })();
+
     var machineBorder = (function() {
         var me = {
             name: "border",
 
             init: function(quadro) {
+                quadro.moveInit();
+                return me.findStart;
+            },
+
+            findStart: function(quadro) {
+                if(quadro.get().borderAuxX && quadro.get().borderAuxY) {
+                    return me.drawBorder;
+                } else if(quadro.getChar() === BOUND) {
+                    quadro.moveCrLf();
+                    if(quadro.getChar() === BOUND) {
+                        throw new Error("internal error");
+                    }
+                    return me.findStart;
+                } else {
+                    quadro.move(RIGHT);
+                    return me.findStart;
+                }
+            },
+
+            drawBorder: function(quadro) {
                 quadro.get().borderStart = true;
                 quadro.get().border = true;
                 quadro.get().borderX = true;
@@ -348,7 +477,7 @@ function akiha(input) {
 
                 if(cell.borderStart) {
                     return machineGrid.init;
-                } else if(quadro.isWhitespace()) {
+                } else if(quadro.getChar() === BOUND) {
                     quadro.moveBackward();
                     return me.turn;
                 } else {
@@ -363,11 +492,19 @@ function akiha(input) {
             },
 
             turn: function(quadro) {
-                if(quadro.getChar() === nodeCh) {
+                var cell = quadro.get();
+
+                if(cell.borderAuxX && cell.borderAuxY) {
                     quadro.turnRight();
                     return me.forward;
                 } else {
-                    throw new Error("invalid border : " + quadro.getChar());
+                    cell.border = undef;
+                    cell.borderX = undef;
+                    cell.borderY = undef;
+                    cell.borderUp = undef;
+                    cell.borderLeft = undef;
+                    quadro.moveBackward();
+                    return me.turn;
                 }
             }
         };
@@ -656,7 +793,13 @@ function akiha(input) {
                     if(quadro.getChar() === nodeCh) {
                         quadro.turnRight().moveForward();
                         if(quadro.isWhitespace()) {
-                            quadro.moveBackward().turnLeft();
+                            quadro.moveBackward().turnLeft().moveForward();
+                            if(quadro.isWhitespace()) {
+                                quadro.loopRemove();
+                                quadro.moveInit();
+                                return me.noloop;
+                            }
+                            quadro.moveBackward();
                             quadro.loopAdd();
                             quadro.get().cellScanned = quadro.getDirection();
                             quadro.moveForward();
@@ -693,6 +836,20 @@ function akiha(input) {
                         quadro.moveForward();
                         return me.node;
                     }
+                },
+
+                noloop: function(quadro) {
+                    quadro.move(RIGHT);
+                    if(quadro.get().clockwiseBegin) {
+                        quadro.get().clockwiseBegin = undef;
+                        return returnMachine;
+                    } else if(quadro.getChar() === BOUND) {
+                        quadro.moveCrLf();
+                        if(quadro.getChar() === BOUND) {
+                            throw new Error("internal error");
+                        }
+                    }
+                    return me.noloop;
                 },
 
                 afterLabel: function(quadro) {
