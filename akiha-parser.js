@@ -239,6 +239,13 @@ function quadro(inputString) {
             return me;
         },
 
+        loopAddSerial: function() {
+            var l = me.loops[me.loops.length - 1];
+
+            l.push({ x: l[l.length - 1].x, y: l[l.length - 1].y, neighbor: l[l.length - 1].neighbor });
+            return me;
+        },
+
         loopRemove: function() {
             me.loops.pop();
             return me;
@@ -252,6 +259,11 @@ function quadro(inputString) {
         getLoop: function() {
             var l = me.loops[me.loops.length - 1];
             return l[l.length - 1];
+        },
+
+        isElementExist: function() {
+            var l = me.loops[me.loops.length - 1];
+            return l[l.length - 1].resist !== undef || l[l.length - 1].voltage !== undef;
         }
     };
     return me;
@@ -822,22 +834,37 @@ function akiha(input) {
                             }
                         }
                     } else {
-                        if(/[<>^v]/.test(quadro.getChar()) && quadro.getLoop().resist === undef) {
+                        if(/[<>^v]/.test(quadro.getChar()) && !quadro.elementDefined) {
+                            quadro.elementDefined = true;
+                            if(quadro.isElementExist()) {
+                                quadro.loopAddSerial();
+                            }
                             return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
                                 loop.resist = val;
                             }), me.afterLabel);
-                        } else if(quadro.isDirectionVertical() && quadro.getChar() === "-" && quadro.getLoop().voltage === undef) {
+                        } else if(quadro.isDirectionVertical() && quadro.getChar() === "-" && !quadro.elementDefined) {
+                            quadro.elementDefined = true;
+                            if(quadro.isElementExist()) {
+                                quadro.loopAddSerial();
+                            }
                             if(quadro.getChar(1, 0) === "-" || quadro.getChar(-1, 0) === "-") {
                                 quadro.setVoltage(3);
                             } else {
                                 quadro.setVoltage(-3);
                             }
-                        } else if(quadro.isDirectionHorizontal() && quadro.getChar() === "|" && quadro.getLoop().voltage === undef) {
+                        } else if(quadro.isDirectionHorizontal() && quadro.getChar() === "|" && !quadro.elementDefined) {
+                            quadro.elementDefined = true;
+                            if(quadro.isElementExist()) {
+                                quadro.loopAddSerial();
+                            }
                             if(quadro.getChar(0, 1) === "|" || quadro.getChar(0, -1) === "|") {
                                 quadro.setVoltage(3);
                             } else {
                                 quadro.setVoltage(-3);
                             }
+                        } else if((quadro.isDirectionVertical() && quadro.getChar() === "|") ||
+                                (quadro.isDirectionHorizontal() && quadro.getChar() === "-")) {
+                            quadro.elementDefined = false;
                         }
                         quadro.get().cellScanned = quadro.getDirection();
                         quadro.moveForward();
