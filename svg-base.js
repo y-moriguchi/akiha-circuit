@@ -43,13 +43,16 @@ function createSvg(base) {
             toAdd.appendChild(node);
         },
 
-        addCircle: function(toAdd, x, y, radius, stroke) {
+        addCircle: function(toAdd, x, y, radius, stroke, fill) {
             var node = me.createNode("circle");
 
             node.setAttribute("cx", x);
             node.setAttribute("cy", y);
             node.setAttribute("r", radius);
             node.setAttribute("stroke", stroke);
+            if(fill) {
+                node.setAttribute("fill", fill);
+            }
             toAdd.appendChild(node);
         },
 

@@ -20,6 +20,10 @@ var defaultOption = {
     capacitorGap: 10,
     capacitorLength: 16,
     inductorLength: 40,
+    voltageACRadius: 10,
+    voltageACx: 6,
+    voltageACy: 8,
+    voltageACFill: "none",
     jointRadius: 2,
     fontFamily: "sans-serif",
     fontSize: "10pt",
@@ -210,6 +214,37 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 drawCoil1(1);
                 drawCoil1(2);
                 drawCoil1(3);
+                svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+            }
+        ),
+
+        drawVoltageAC: makeDrawing(
+            opt.voltageACRadius * 2,
+            function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var points = "";
+
+                svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
+                svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
+                points += "M " + ((p4 + p3) / 2) + " " + pay + " ";
+                points += "q " + (-opt.voltageACx / 2) + " " + (-opt.voltageACy / 2) + " " + (-opt.voltageACx) + " 0";
+                svg.addPath(canvas, points, opt.fill, opt.stroke);
+                points += "M " + ((p4 + p3) / 2) + " " + pay + " ";
+                points += "q " + (opt.voltageACx / 2) + " " + (opt.voltageACy / 2) + " " + (opt.voltageACx) + " 0";
+                svg.addPath(canvas, points, opt.fill, opt.stroke);
+                svg.addCircle(canvas, (p4 + p3) / 2, pay, opt.voltageACRadius, opt.stroke, opt.voltageACFill);
+                svg.addText(canvas, point1.text, pl1, pay - opt.textMargin, opt);
+            }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var points = "";
+
+                svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
+                svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
+                points += "M " + pax + " " + ((p4 + p3) / 2) + " ";
+                points += "q " + (-opt.voltageACx / 2) + " " + (-opt.voltageACy / 2) + " " + (-opt.voltageACx) + " 0";
+                svg.addPath(canvas, points, opt.fill, opt.stroke);
+                points += "M " + pax + " " + ((p4 + p3) / 2) + " ";
+                points += "q " + (opt.voltageACx / 2) + " " + (opt.voltageACy / 2) + " " + (opt.voltageACx) + " 0";
+                svg.addPath(canvas, points, opt.fill, opt.stroke);
+                svg.addCircle(canvas, pax, (p4 + p3) / 2, opt.voltageACRadius, opt.stroke, opt.voltageACFill);
                 svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
             }
         ),

@@ -805,6 +805,14 @@ function akiha(input) {
                             return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
                                 loop.inductance = val;
                             }), me.afterLabel);
+                        } else if(/[~]/.test(quadro.getChar()) && !quadro.elementDefined) {
+                            quadro.elementDefined = true;
+                            if(quadro.isElementExist()) {
+                                quadro.loopAddSerial();
+                            }
+                            return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
+                                loop.voltageAC = val;
+                            }), me.afterLabel);
                         } else if(quadro.isDirectionVertical() && quadro.getChar() === "-" && !quadro.elementDefined) {
                             quadro.elementDefined = true;
                             if(quadro.isElementExist()) {

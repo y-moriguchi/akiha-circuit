@@ -139,6 +139,8 @@ function draw(loops, drawer) {
                             drawer.drawCapacitor(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else if(drawSerial[k].inductance !== undef) {
                             drawer.drawInductor(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
+                        } else if(drawSerial[k].voltageAC !== undef) {
+                            drawer.drawVoltageAC(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else {
                             drawer.drawLine(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         }
