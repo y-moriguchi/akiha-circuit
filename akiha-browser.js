@@ -6,31 +6,17 @@
  * This software is released under the MIT License.
  * http://opensource.org/licenses/mit-license.php
  **/
-var akiha = require("./akiha-parser.js");
-var drawCircuit = require("./akiha-draw.js");
-var drawSvgLib = require("./akiha-svg.js");
-var drawSvgBaseLib = require("./svg-base.js");
+var akiha = require("./akiha-facade.js");
 var drawSvgConcreteLib = require("./svg-browser.js");
 var opt = {
     scriptType: "text/x-akiha-circuit"
 };
 
-function createNode(prog) {
-    var loops = akiha.parse(prog);
-    var drawSvgConcrete = drawSvgBaseLib(drawSvgConcreteLib);
-    var drawSvg = drawSvgLib(loops.xMaxNodes, loops.yMaxNodes, drawSvgConcrete);
-
-    console.log(drawSvgConcrete);
-    console.log(loops);
-    drawCircuit(loops.loops, drawSvg);
-    return drawSvg.getCanvas();
-}
-
 function replaceChildNode(node, text) {
     var result,
         divNode;
 
-    result = createNode(text);
+    result = akiha.createSvg(text, drawSvgConcreteLib);
     divNode = document.createElement("div");
     divNode.appendChild(result);
     node.parentNode.replaceChild(divNode, node);

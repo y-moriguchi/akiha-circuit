@@ -26,7 +26,44 @@ function extend(base, child) {
     return result;
 }
 
+function I(x) {
+    return x;
+}
+
+function replaceTemplateFunction(template, setting, interprocess, postprocess) {
+    function replaceStr(str, prop) {
+        if(typeof setting[prop] === 'object') {
+            return JSON.stringify(setting[prop], null, 2);
+        } else {
+            return interprocess(setting[prop]);
+        }
+    }
+
+    return postprocess(template.replace(/@([^@\n]+)@/g, replaceStr));
+}
+
+function replaceTemplate(template, setting) {
+    return replaceTemplateFunction(template, setting, I, I);
+}
+
+function replaceTemplateRegExp(template, setting, opt) {
+    function escapeRE(x) {
+        var result = x;
+        result = result.replace(/\\/, "\\\\");
+        result = result.replace(/\//, "\\/");
+        return result;
+    }
+
+    function post(x) {
+        return new RegExp(x, opt);
+    }
+
+    return replaceTemplateFunction(template, setting, escapeRE, post);
+}
+
 module.exports = {
-    extend: extend
+    extend: extend,
+    replaceTemplate: replaceTemplate,
+    replaceTemplateRegExp: replaceTemplateRegExp
 };
 
