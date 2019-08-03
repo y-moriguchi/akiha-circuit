@@ -135,6 +135,10 @@ function draw(loops, drawer) {
                             drawer.drawBattery(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else if(drawSerial[k].resist !== undef) {
                             drawer.drawResistor(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
+                        } else if(drawSerial[k].capacitance !== undef) {
+                            drawer.drawCapacitor(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
+                        } else if(drawSerial[k].inductance !== undef) {
+                            drawer.drawInductor(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else {
                             drawer.drawLine(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         }

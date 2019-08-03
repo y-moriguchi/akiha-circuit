@@ -6,6 +6,7 @@
  * This software is released under the MIT License.
  * http://opensource.org/licenses/mit-license.php
  **/
+var common = require("./akiha-common.js");
 var returnMachine,
     undef = void 0,
     BOUND = -1,
@@ -16,58 +17,6 @@ var returnMachine,
 
 function log(message) {
     console.log(message);
-}
-
-function isArray(anObject) {
-    return Object.prototype.toString.call(anObject) === '[object Array]';
-}
-
-function deepcopy(anObject) {
-    var result;
-
-    function copyAll() {
-        var i;
-
-        for(i in anObject) {
-            if(anObject.hasOwnProperty(i)) {
-                result[i] = deepcopy(anObject[i]);
-            }
-        }
-    }
-
-    if(isArray(anObject)) {
-        result = [];
-        copyAll();
-        return result;
-    } else if(typeof anObject === 'object' && anObject !== null) {
-        result = {};
-        copyAll();
-        return result;
-    } else {
-        return anObject;
-    }
-}
-
-var UNIT = {
-    "k": 1000,
-    "M": 1000000,
-    "G": 1000000000,
-    "T": 1000000000000,
-    "m": 0.001,
-    "u": 0.000001,
-    "µ": 0.000001,
-    "n": 0.000000001,
-    "p": 0.000000000001
-};
-
-function convertEngineerUnit(text) {
-    var unit = text.charAt(text.length - 1);
-
-    if(UNIT[unit]) {
-        return parseFloat(text.substring(0, text.length - 1)) * UNIT[unit];
-    } else {
-        return parseFloat(text);
-    }
 }
 
 function isNode(ch) {
@@ -128,9 +77,15 @@ function quadro(inputString) {
         get: function(xoffset, yoffset) {
             if(xoffset === undef || yoffset === undef) {
                 return cellMatrix[yNow][xNow];
+            } else if(xNow + xoffset < 0 || xNow + xoffset >= maxLength || yNow + yoffset < 0 || yNow + yoffset >= cellMatrix.length) {
+                return { ch: BOUND };
             } else {
                 return cellMatrix[yNow + yoffset][xNow + xoffset];
             }
+        },
+
+        getForward: function(offset) {
+            return me.get(TURN[direction].x * offset, TURN[direction].y * offset);
         },
 
         move: function(direction) {
@@ -842,25 +797,49 @@ function akiha(input) {
                             return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
                                 loop.resist = val;
                             }), me.afterLabel);
+                        } else if(/[cm]/.test(quadro.getChar()) && !quadro.elementDefined) {
+                            quadro.elementDefined = true;
+                            if(quadro.isElementExist()) {
+                                quadro.loopAddSerial();
+                            }
+                            return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
+                                loop.inductance = val;
+                            }), me.afterLabel);
                         } else if(quadro.isDirectionVertical() && quadro.getChar() === "-" && !quadro.elementDefined) {
                             quadro.elementDefined = true;
                             if(quadro.isElementExist()) {
                                 quadro.loopAddSerial();
                             }
-                            if(quadro.getChar(1, 0) === "-" || quadro.getChar(-1, 0) === "-") {
-                                quadro.setVoltage(3);
+                            if(quadro.getForward(1).ch === " ") {
+                                return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
+                                    loop.capacitance = val;
+                                }), me.afterLabel);
+                            } else if(quadro.getChar(1, 0) === "-" || quadro.getChar(-1, 0) === "-") {
+                                return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
+                                    loop.voltage = val;
+                                }), me.afterLabel);
                             } else {
-                                quadro.setVoltage(-3);
+                                return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
+                                    loop.voltage = -val;
+                                }), me.afterLabel);
                             }
                         } else if(quadro.isDirectionHorizontal() && quadro.getChar() === "|" && !quadro.elementDefined) {
                             quadro.elementDefined = true;
                             if(quadro.isElementExist()) {
                                 quadro.loopAddSerial();
                             }
-                            if(quadro.getChar(0, 1) === "|" || quadro.getChar(0, -1) === "|") {
-                                quadro.setVoltage(3);
+                            if(quadro.getForward(1).ch === " ") {
+                                return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
+                                    loop.capacitance = val;
+                                }), me.afterLabel);
+                            } else if(quadro.getChar(0, 1) === "|" || quadro.getChar(0, -1) === "|") {
+                                return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
+                                    loop.voltage = val;
+                                }), me.afterLabel);
                             } else {
-                                quadro.setVoltage(-3);
+                                return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, text, val) {
+                                    loop.voltage = -val;
+                                }), me.afterLabel);
                             }
                         } else if((quadro.isDirectionVertical() && quadro.getChar() === "|") ||
                                 (quadro.isDirectionHorizontal() && quadro.getChar() === "-")) {
@@ -942,7 +921,7 @@ function akiha(input) {
                             return me.readLabel;
                         } else {
                             text = quadro.getLoop().text;
-                            val = convertEngineerUnit(text.replace(/([0-9]+(?:\.[0-9]+)?[kMGTmuµnp]?).*/, "$1"));
+                            val = common.convertEngineerUnit(text.replace(/([0-9]+(?:\.[0-9]+)?[kMGTmuµnp]?).*/, "$1"));
                             setFunction(quadro.getLoop(), text, val);
                             return returnMachine;
                         }
@@ -988,7 +967,7 @@ function akiha(input) {
                             return me.init;
                         } else {
                             text = quadro.getLoop().text;
-                            val = convertEngineerUnit(text.replace(/([0-9]+(?:\.[0-9]+)?[kMGTmuµnp]?).*/, "$1"));
+                            val = common.convertEngineerUnit(text.replace(/([0-9]+(?:\.[0-9]+)?[kMGTmuµnp]?).*/, "$1"));
                             setFunction(quadro.getLoop(), text, val);
                             return returnMachine;
                         }
@@ -1063,7 +1042,7 @@ function akiha(input) {
             throw new Error("internal error");
         }
 
-        loopsNew = deepcopy(loops);
+        loopsNew = common.deepcopy(loops);
         for(i = 0; i < loops.length; i++) {
             for(j = 0; j < loops[i].length; j++) {
                 insert(noX, loops[i][j].x);
