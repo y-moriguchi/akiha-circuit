@@ -1,0 +1,134 @@
+<svg width="630" height="300" xmlns="http://www.w3.org/2000/svg">
+<path d="M 70 33 L 120 33 L 120 47 L 70 47 L 70 33" fill="white" stroke="#000000">
+</path>
+<line x1="40" y1="40" x2="70" y2="40" stroke="#000000">
+</line>
+<line x1="120" y1="40" x2="150" y2="40" stroke="#000000">
+</line>
+<text x="70" y="26" font-family="sans-serif" font-size="10pt">
+4.7k</text>
+<circle cx="150" cy="40" r="2" stroke="#000000">
+</circle>
+<line x1="150" y1="40" x2="150" y2="150" stroke="#000000">
+</line>
+<circle cx="150" cy="150" r="2" stroke="#000000">
+</circle>
+<path d="M 70 143 L 120 143 L 120 157 L 70 157 L 70 143" fill="white" stroke="#000000">
+</path>
+<line x1="40" y1="150" x2="70" y2="150" stroke="#000000">
+</line>
+<line x1="120" y1="150" x2="150" y2="150" stroke="#000000">
+</line>
+<text x="70" y="136" font-family="sans-serif" font-size="10pt">
+1k</text>
+<circle cx="40" cy="150" r="2" stroke="#000000">
+</circle>
+<line x1="40" y1="150" x2="40" y2="40" stroke="#000000">
+</line>
+<circle cx="150" cy="40" r="2" stroke="#000000">
+</circle>
+<line x1="150" y1="40" x2="260" y2="40" stroke="#000000">
+</line>
+<circle cx="260" cy="40" r="2" stroke="#000000">
+</circle>
+<line x1="260" y1="40" x2="260" y2="150" stroke="#000000">
+</line>
+<circle cx="260" cy="150" r="2" stroke="#000000">
+</circle>
+<line x1="260" y1="150" x2="260" y2="202" stroke="#000000">
+</line>
+<line x1="260" y1="208" x2="260" y2="260" stroke="#000000">
+</line>
+<line x1="250" y1="202" x2="270" y2="202" stroke="#000000">
+</line>
+<line x1="255" y1="208" x2="265" y2="208" stroke="#000000">
+</line>
+<text x="274" y="205" font-family="sans-serif" font-size="10pt">
+3V</text>
+<circle cx="260" cy="260" r="2" stroke="#000000">
+</circle>
+<line x1="260" y1="260" x2="150" y2="260" stroke="#000000">
+</line>
+<circle cx="150" cy="260" r="2" stroke="#000000">
+</circle>
+<line x1="150" y1="260" x2="150" y2="150" stroke="#000000">
+</line>
+<circle cx="260" cy="40" r="2" stroke="#000000">
+</circle>
+<line x1="260" y1="40" x2="480" y2="40" stroke="#000000">
+</line>
+<circle cx="480" cy="40" r="2" stroke="#000000">
+</circle>
+<line x1="480" y1="40" x2="480" y2="150" stroke="#000000">
+</line>
+<circle cx="480" cy="150" r="2" stroke="#000000">
+</circle>
+<path d="M 400 143 L 450 143 L 450 157 L 400 157 L 400 143" fill="white" stroke="#000000">
+</path>
+<line x1="370" y1="150" x2="400" y2="150" stroke="#000000">
+</line>
+<line x1="450" y1="150" x2="480" y2="150" stroke="#000000">
+</line>
+<text x="400" y="136" font-family="sans-serif" font-size="10pt">
+40k</text>
+<path d="M 290 143 L 340 143 L 340 157 L 290 157 L 290 143" fill="white" stroke="#000000">
+</path>
+<line x1="260" y1="150" x2="290" y2="150" stroke="#000000">
+</line>
+<line x1="340" y1="150" x2="370" y2="150" stroke="#000000">
+</line>
+<text x="290" y="136" font-family="sans-serif" font-size="10pt">
+20k</text>
+<circle cx="480" cy="40" r="2" stroke="#000000">
+</circle>
+<line x1="480" y1="40" x2="590" y2="40" stroke="#000000">
+</line>
+<path d="M 583 125 L 583 175 L 597 175 L 597 125 L 583 125" fill="white" stroke="#000000">
+</path>
+<line x1="590" y1="40" x2="590" y2="125" stroke="#000000">
+</line>
+<line x1="590" y1="175" x2="590" y2="260" stroke="#000000">
+</line>
+<text x="604" y="150" font-family="sans-serif" font-size="10pt">
+4.7k</text>
+<line x1="590" y1="260" x2="480" y2="260" stroke="#000000">
+</line>
+<circle cx="480" cy="260" r="2" stroke="#000000">
+</circle>
+<path d="M 473 180 L 473 230 L 487 230 L 487 180 L 473 180" fill="white" stroke="#000000">
+</path>
+<line x1="480" y1="150" x2="480" y2="180" stroke="#000000">
+</line>
+<line x1="480" y1="230" x2="480" y2="260" stroke="#000000">
+</line>
+<text x="494" y="205" font-family="sans-serif" font-size="10pt">
+2.2k</text>
+<circle cx="150" cy="260" r="2" stroke="#000000">
+</circle>
+<path d="M 70 253 L 120 253 L 120 267 L 70 267 L 70 253" fill="white" stroke="#000000">
+</path>
+<line x1="40" y1="260" x2="70" y2="260" stroke="#000000">
+</line>
+<line x1="120" y1="260" x2="150" y2="260" stroke="#000000">
+</line>
+<text x="70" y="246" font-family="sans-serif" font-size="10pt">
+10k</text>
+<path d="M 33 180 L 33 230 L 47 230 L 47 180 L 33 180" fill="white" stroke="#000000">
+</path>
+<line x1="40" y1="150" x2="40" y2="180" stroke="#000000">
+</line>
+<line x1="40" y1="230" x2="40" y2="260" stroke="#000000">
+</line>
+<text x="54" y="205" font-family="sans-serif" font-size="10pt">
+10k</text>
+<circle cx="480" cy="260" r="2" stroke="#000000">
+</circle>
+<path d="M 345 253 L 395 253 L 395 267 L 345 267 L 345 253" fill="white" stroke="#000000">
+</path>
+<line x1="260" y1="260" x2="345" y2="260" stroke="#000000">
+</line>
+<line x1="395" y1="260" x2="480" y2="260" stroke="#000000">
+</line>
+<text x="345" y="246" font-family="sans-serif" font-size="10pt">
+10k</text>
+</svg>
