@@ -217,8 +217,10 @@ function quadro(inputString) {
         },
 
         isElementExist: function() {
-            var l = me.loops[me.loops.length - 1];
-            return l[l.length - 1].resist !== undef || l[l.length - 1].voltage !== undef;
+            var l = me.loops[me.loops.length - 1],
+                el = l[l.length - 1];
+
+            return el.resist !== undef || el.voltage !== undef || el.capacitance !== undef || el.inductance !== undef || el.voltageAC !== undef;
         }
     };
     return me;
@@ -910,12 +912,43 @@ function akiha(input) {
 
                     findLabel: function(quadro) {
                         if(quadro.getChar() === BOUND || !labelChars.test(quadro.getChar())) {
-                            quadro.move(RIGHT);
+                            quadro.move(RIGHT).move(UP);
                             quadro.getLoop().text = "";
-                            return me.readLabel;
+                            quadro.getLoop().name = "";
+                            return me.findLabelUp;
                         } else {
                             quadro.move(LEFT);
                             return me.findLabel;
+                        }
+                    },
+
+                    findLabelUp: function(quadro) {
+                        if(quadro.getChar() === BOUND || !labelChars.test(quadro.getChar())) {
+                            quadro.move(DOWN);
+                            return me.readLabel;
+                        } else {
+                            return me.readName;
+                        }
+                    },
+
+                    readName: function(quadro) {
+                        if(quadro.getChar() !== BOUND && labelChars.test(quadro.getChar())) {
+                            quadro.getLoop().name += quadro.getChar();
+                            quadro.move(RIGHT);
+                            return me.readName;
+                        } else {
+                            quadro.move(LEFT);
+                            return me.readNameReturn;
+                        }
+                    },
+
+                    readNameReturn: function(quadro) {
+                        if(quadro.getChar() !== BOUND && labelChars.test(quadro.getChar())) {
+                            quadro.move(LEFT);
+                            return me.readNameReturn;
+                        } else {
+                            quadro.move(RIGHT).move(DOWN);
+                            return me.readLabel;
                         }
                     },
 
@@ -949,17 +982,29 @@ function akiha(input) {
                             return returnMachine;
                         } else if(labelChars.test(quadro.getChar())) {
                             quadro.getLoop().text = "";
+                            quadro.getLoop().name = "";
+                            if(quadro.getChar(0, -1) !== BOUND && labelChars.test(quadro.getChar(0, -1))) {
+                                quadro.move(UP);
+                                return new CallMachine(machineReadLabelUpDownProp("name"), me.moveDown);
+                            } else if(quadro.getChar(0, 1) !== BOUND && labelChars.test(quadro.getChar(0, 1))) {
+                                return new CallMachine(machineReadLabelUpDownProp("name"), me.moveDown);
+                            }
                             return machineReadLabelUpDown.init;
                         } else {
                             quadro.move(direction);
                             return me.init;
                         }
+                    },
+
+                    moveDown: function(quadro) {
+                        quadro.move(DOWN);
+                        return machineReadLabelUpDown.init;
                     }
                 };
                 return me;
             }
 
-            var machineReadLabelUpDown = (function() {
+            function machineReadLabelUpDownProp(prop) {
                 var me;
 
                 me = {
@@ -970,14 +1015,67 @@ function akiha(input) {
                             val;
 
                         if(labelChars.test(quadro.getChar()) && quadro.getChar() !== BOUND) {
-                            quadro.getLoop().text += quadro.getChar();
+                            quadro.getLoop()[prop] += quadro.getChar();
                             quadro.move(RIGHT);
                             return me.init;
                         } else {
-                            text = quadro.getLoop().text;
-                            val = common.convertEngineerUnit(text.replace(/([0-9]+(?:\.[0-9]+)?[kMGTmuµnp]?).*/, "$1"));
-                            setFunction(quadro.getLoop(), text, val);
+                            text = quadro.getLoop()[prop];
+                            if(prop === "text") {
+                                val = common.convertEngineerUnit(text.replace(/([0-9]+(?:\.[0-9]+)?[kMGTmuµnp]?).*/, "$1"));
+                                setFunction(quadro.getLoop(), text, val);
+                            }
                             return returnMachine;
+                        }
+                    }
+                };
+                return me;
+            }
+
+            var machineReadLabelUpDown = machineReadLabelUpDownProp("text");
+            var machineScanPolarity = (function() {
+                var me;
+
+                me = {
+                    name: "scanPolarity",
+
+                    init: function(quadro) {
+                        if(direction === RIGHT || direction === DOWN) {
+                            quadro.turnRight().moveForward().turnRight();
+                        } else {
+                            quadro.turnLeft().moveForward().turnLeft();
+                        }
+                        return me.scanNegative;
+                    },
+
+                    scanNegative: function(quadro) {
+                        if(quadro.getChar() === "+") {
+                            quadro.getLoop().polarity = -1;
+                            return returnMachine;
+                        } else if((!quadro.isWhitespace() && (quadro.get().gridX || quadro.get().gridY)) ||
+                                ((direction === LEFT || direction === RIGHT) && /[\-]/.test(quadro.getChar(0, -1))) ||
+                                ((direction === UP || direction === DOWN) && /[\|]/.test(quadro.getChar(1, 0))) ||
+                                quadro.getChar() === BOUND) {
+                            quadro.turnLeft().turnLeft().moveForward();
+                            return me.scanPositive;
+                        } else {
+                            quadro.moveForward();
+                            return me.scanNegative;
+                        }
+                    },
+
+                    scanPositive: function(quadro) {
+                        if(quadro.getChar() === "+") {
+                            quadro.getLoop().polarity = 1;
+                            return returnMachine;
+                        } else if((!quadro.isWhitespace() && (quadro.get().gridX || quadro.get().gridY)) ||
+                                ((direction === LEFT || direction === RIGHT) && /[\-]/.test(quadro.getChar(0, -1))) ||
+                                ((direction === UP || direction === DOWN) && /[\|]/.test(quadro.getChar(1, 0))) ||
+                                quadro.getChar() === BOUND) {
+                            quadro.getLoop().polarity = 0;
+                            return returnMachine;
+                        } else {
+                            quadro.moveForward();
+                            return me.scanPositive;
                         }
                     }
                 };
@@ -985,12 +1083,26 @@ function akiha(input) {
             })();
 
             if(direction === LEFT || direction === RIGHT) {
-                return machineScanLabelLeft;
+                me = {
+                    name: "scanLabel",
+
+                    init: function(quadro) {
+                        return new CallMachine(machineScanPolarity, me.label);
+                    },
+
+                    label: function(quadro) {
+                        return machineScanLabelLeft.init;
+                    }
+                };
             } else {
                 me = {
                     name: "scanLabel",
 
                     init: function(quadro) {
+                        return new CallMachine(machineScanPolarity, me.label);
+                    },
+
+                    label: function(quadro) {
                         quadro.move(RIGHT);
                         return new CallMachine(makeMachineScanLabelUpDown(UP), me.down);
                     },
