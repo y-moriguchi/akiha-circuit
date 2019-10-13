@@ -767,13 +767,21 @@ function akiha(input) {
 
                 node: function(quadro) {
                     if(isNode(quadro.getChar())) {
+                        if(quadro.get().clockwiseBegin) {
+                            quadro.get().clockwiseBegin = false;
+                            quadro.loopAdd();
+                            return returnMachine;
+                        }
                         quadro.turnRight().moveForward();
                         if(quadro.isWhitespace()) {
                             quadro.moveBackward().turnLeft().moveForward();
                             if(quadro.isWhitespace()) {
-                                quadro.loopRemove();
-                                quadro.moveInit();
-                                return me.noloop;
+                                quadro.moveBackward().turnLeft().moveForward();
+                                if(quadro.isWhitespace()) {
+                                    quadro.loopRemove();
+                                    quadro.moveInit();
+                                    return me.noloop;
+                                }
                             }
                             quadro.moveBackward();
                             quadro.loopAdd();
@@ -782,13 +790,7 @@ function akiha(input) {
                             return me.node;
                         } else {
                             quadro.moveBackward();
-                            if(quadro.get().clockwiseBegin) {
-                                quadro.get().clockwiseBegin = false;
-                                quadro.loopAdd();
-                                return returnMachine;
-                            } else {
-                                return me.move;
-                            }
+                            return me.move;
                         }
                     } else {
                         if(/[<>^v]/.test(quadro.getChar()) && !quadro.elementDefined) {
@@ -871,6 +873,7 @@ function akiha(input) {
                         if(quadro.getChar() === BOUND) {
                             throw new Error("internal error");
                         }
+                        quadro.move(LEFT);
                     }
                     return me.noloop;
                 },
@@ -1115,7 +1118,7 @@ function akiha(input) {
                         }
                     },
 
-                    deadState: function(quadro) {
+                    after: function(quadro) {
                         if(quadro.getLoop().text !== undef) {
                             return returnMachine;
                         } else {
@@ -1145,7 +1148,8 @@ function akiha(input) {
                 if(array[i] === val) {
                     return;
                 } else if(array[i] > val) {
-                    array.splice(i, val);
+                    array.splice(i, 0, val);
+                    return;
                 }
             }
             array.push(val);

@@ -6,6 +6,7 @@
  * This software is released under the MIT License.
  * http://opensource.org/licenses/mit-license.php
  **/
+var common = require("./akiha-common.js");
 var defaultOption = {
     sideLength: 110,
     marginX: 70,
@@ -36,7 +37,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
     var me,
         canvas,
         sideLen,
-        opt = defaultOption;
+        opt = option ? common.extend(defaultOption, option) : defaultOption;
 
     function getPoint(point) {
         var rpoint = sideLen.getLength({ x: 0, y: 0 }, point),
