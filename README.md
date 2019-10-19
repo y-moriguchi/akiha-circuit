@@ -1,8 +1,9 @@
 # Akiha-circuit
 
-Akiha-circuit draws electric circuit diagram by ASCII-art.
+Akiha-circuit draws electric circuit diagram by ASCII-art.  
+Document is [here](http://akiha.morilib.net/circuit/index.html).
 
-Input:
+Input:  
 ```
   4.7k
 *-v^v-*---*--------------*---------*
@@ -18,6 +19,6 @@ Input:
 *-v^v-*---*-v^v----------*---------*
 ```
 
-Output:
+Output:  
 ![svg](img/README.0001.svg)
 
