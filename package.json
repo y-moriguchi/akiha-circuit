@@ -1,0 +1,42 @@
+{
+  "name": "akiha-circuit",
+  "version": "0.0.0",
+  "description": "Draws electric circuit diagram by ASCII art",
+  "main": "akiha-facade.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/y-moriguchi/akiha-circuit.git"
+  },
+  "keywords": [
+    "ASCII-art",
+    "circuit"
+  ],
+  "files": [
+    "README.md",
+    "akiha-browser.js",
+    "akiha-cli.js",
+    "akiha-common.js",
+    "akiha-draw.js",
+    "akiha-facade.js",
+    "akiha-parser.js",
+    "akiha-svg.js",
+    "akiha-text.js",
+    "img",
+    "package.json",
+    "svg-base.js",
+    "svg-browser.js",
+    "svg-direct.js"
+  ],
+  "bin": {
+    "akiha-circuit": "akiha-cli.js"
+  },
+  "author": "Yuichiro MORIGUCHI",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/y-moriguchi/akiha-circuit/issues"
+  },
+  "homepage": "https://github.com/y-moriguchi/akiha-circuit#readme"
+}
