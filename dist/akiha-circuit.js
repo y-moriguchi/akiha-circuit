@@ -1381,6 +1381,7 @@ function akiha(input) {
                         } else {
                             text = quadro.text;
                             val = common.convertEngineerUnit(text.replace(/([0-9]+(?:\.[0-9]+)?[kMGTmuµnp]?).*/, "$1"));
+                            val = isNaN(val) ? 1.0 : val;
                             setFunction(quadro.getLoop(), quadro.name, text, val);
                             return returnMachine;
                         }
@@ -1440,6 +1441,7 @@ function akiha(input) {
                             text = quadro[prop];
                             if(prop === "text") {
                                 val = common.convertEngineerUnit(text.replace(/([0-9]+(?:\.[0-9]+)?[kMGTmuµnp]?).*/, "$1"));
+                                val = isNaN(val) ? 1.0 : val;
                                 setFunction(quadro.getLoop(), quadro.name, text, val);
                             }
                             return returnMachine;
