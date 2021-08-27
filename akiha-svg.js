@@ -30,7 +30,9 @@ var defaultOption = {
     fontSize: "10pt",
     textMargin: 14,
     polarityLength: 12,
-    polarityLengthMinor: 4
+    polarityLengthMinor: 4,
+    arrowSize: 6,
+    arrowFill: "black"
 };
 
 function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
@@ -50,6 +52,28 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         return result;
     }
 
+    function makeArrowHorizontal(baseX, baseY, direction) {
+        var points = "";
+
+        points += "M " + (baseX + (direction > 0 ? 0 : opt.arrowSize)) + " " + baseY + " ";
+        points += "l " + 0 + " " + (opt.arrowSize / 2) + " ";
+        points += "l " + (opt.arrowSize * direction) + " -" + (opt.arrowSize / 2) + " ";
+        points += "l " + (-opt.arrowSize * direction) + " -" + (opt.arrowSize / 2) + " ";
+        points += "l " + 0 + " " + (opt.arrowSize / 2);
+        svg.addPath(canvas, points, opt.arrowFill, opt.stroke);
+    }
+
+    function makeArrowVertical(baseX, baseY, direction) {
+        var points = "";
+
+        points += "M " + baseX + " " + (baseY + (direction > 0 ? 0 : opt.arrowSize)) + " ";
+        points += "l " + (opt.arrowSize / 2) + " " + 0 + " ";
+        points += "l -" + (opt.arrowSize / 2) + " " + (opt.arrowSize * direction) + " ";
+        points += "l -" + (opt.arrowSize / 2) + " " + (-opt.arrowSize * direction) + " ";
+        points += "l " + (opt.arrowSize / 2) + " " + 0;
+        svg.addPath(canvas, points, opt.arrowFill, opt.stroke);
+    }
+
     function makeDrawing(length, drawX, drawY) {
         return function(point1, point2, divide, serial) {
             var pax = getPoint(point1).x,
@@ -64,6 +88,8 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 p4,
                 pl1,
                 pl2,
+                preCurrentPoint,
+                postCurrentPoint,
                 points = "";
 
             if(pay === pby) {
@@ -77,6 +103,21 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 pl1 = p3 + (p4 - p3) / 2 - length / 2;
                 pl2 = p3 + (p4 - p3) / 2 + length / 2;
                 drawX(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4);
+                if(point1.polarity * (pax - pbx) > 0) {
+                    svg.addText(canvas, "+", pl1 - opt.polarityLength, pay + opt.polarityLength, opt);
+                } else if(point1.polarity * (pax - pbx) < 0) {
+                    svg.addText(canvas, "+", pl2 + opt.polarityLengthMinor, pay + opt.polarityLength, opt);
+                }
+                if(point1.preCurrent) {
+                    preCurrentPoint = p3 + (pl1 - p3) / 2;
+                    svg.addText(canvas, point1.preCurrent.text, preCurrentPoint, pay - opt.arrowSize - 2, opt);
+                    makeArrowHorizontal(preCurrentPoint, pay, point1.preCurrent.direction === ">" ? 1 : -1);
+                }
+                if(point1.postCurrent) {
+                    postCurrentPoint = p4 - (p4 - pl2) / 2;
+                    svg.addText(canvas, point1.postCurrent.text, postCurrentPoint, pay - opt.arrowSize - 2, opt);
+                    makeArrowHorizontal(postCurrentPoint, pay, point1.postCurrent.direction === ">" ? 1 : -1);
+                }
             } else {
                 if(pay < pby) {
                     p3 = p1y + (p2y - p1y) * (divide) / serial;
@@ -88,6 +129,21 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 pl1 = p3 + (p4 - p3) / 2 - length / 2;
                 pl2 = p3 + (p4 - p3) / 2 + length / 2;
                 drawY(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4);
+                if(point1.polarity * (pay - pby) > 0) {
+                    svg.addText(canvas, "+", pax - opt.polarityLength, pl1 - opt.polarityLengthMinor, opt);
+                } else if(point1.polarity * (pay - pby) < 0) {
+                    svg.addText(canvas, "+", pax - opt.polarityLength, pl2 + opt.polarityLength, opt);
+                }
+                if(point1.preCurrent) {
+                    preCurrentPoint = p3 + (pl1 - p3) / 2;
+                    svg.addText(canvas, point1.preCurrent.text, pax - opt.textMargin, preCurrentPoint, opt);
+                    makeArrowVertical(pax, preCurrentPoint, point1.preCurrent.direction === "v" ? 1 : -1);
+                }
+                if(point1.postCurrent) {
+                    postCurrentPoint = p4 - (p4 - pl2) / 2;
+                    svg.addText(canvas, point1.postCurrent.text, pax - opt.textMargin, postCurrentPoint, opt);
+                    makeArrowVertical(pax, postCurrentPoint, point1.postCurrent.direction === "v" ? 1 : -1);
+                }
             }
         }
     }
@@ -194,11 +250,6 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
-                if(point1.polarity * (pax - pbx) > 0) {
-                    svg.addText(canvas, "+", pl1 - opt.polarityLength, pay + opt.polarityLength, opt);
-                } else if(point1.polarity * (pax - pbx) < 0) {
-                    svg.addText(canvas, "+", pl2 + opt.polarityLengthMinor, pay + opt.polarityLength, opt);
-                }
             }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
                 svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
                 svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
@@ -209,11 +260,6 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
                     svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
-                }
-                if(point1.polarity * (pay - pby) > 0) {
-                    svg.addText(canvas, "+", pax - opt.polarityLength, pl1 - opt.polarityLengthMinor, opt);
-                } else if(point1.polarity * (pay - pby) < 0) {
-                    svg.addText(canvas, "+", pax - opt.polarityLength, pl2 - opt.polarityLength, opt);
                 }
             }
         ),
