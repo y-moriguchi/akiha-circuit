@@ -13,8 +13,10 @@ var defaultOption = {
     marginY: 60,
     stroke: "#000000",
     fill: "white",
+    resistorOld: false,
     resistorLong: 50,
     resistorShort: 14,
+    resistorLongOld: 35,
     batteryGap: 6,
     batteryLong: 20,
     batteryShort: 10,
@@ -168,15 +170,26 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         },
 
         drawResistor: makeDrawing(
-            opt.resistorLong,
+            opt.resistorOld ? opt.resistorLongOld : opt.resistorLong,
             function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
                 var points = "";
 
-                points += "M " + pl1 + " " + (pay - opt.resistorShort / 2) + " ";
-                points += "L " + pl2 + " " + (pay - opt.resistorShort / 2) + " ";
-                points += "L " + pl2 + " " + (pay + opt.resistorShort / 2) + " ";
-                points += "L " + pl1 + " " + (pay + opt.resistorShort / 2) + " ";
-                points += "L " + pl1 + " " + (pay - opt.resistorShort / 2);
+                if(opt.resistorOld) {
+                    points += "M " + pl1 + " " + pay + " ";
+                    points += "l " + (opt.resistorLongOld / 12) + " " + (opt.resistorShort / 2) + " ";
+                    points += "l " + (opt.resistorLongOld * 2 / 12) + " " + (-opt.resistorShort) + " ";
+                    points += "l " + (opt.resistorLongOld * 2 / 12) + " " + (opt.resistorShort) + " ";
+                    points += "l " + (opt.resistorLongOld * 2 / 12) + " " + (-opt.resistorShort) + " ";
+                    points += "l " + (opt.resistorLongOld * 2 / 12) + " " + (opt.resistorShort) + " ";
+                    points += "l " + (opt.resistorLongOld * 2 / 12) + " " + (-opt.resistorShort) + " ";
+                    points += "l " + (opt.resistorLongOld / 12) + " " + (opt.resistorShort / 2) + " ";
+                } else {
+                    points += "M " + pl1 + " " + (pay - opt.resistorShort / 2) + " ";
+                    points += "L " + pl2 + " " + (pay - opt.resistorShort / 2) + " ";
+                    points += "L " + pl2 + " " + (pay + opt.resistorShort / 2) + " ";
+                    points += "L " + pl1 + " " + (pay + opt.resistorShort / 2) + " ";
+                    points += "L " + pl1 + " " + (pay - opt.resistorShort / 2);
+                }
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
                 svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
@@ -187,11 +200,22 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
             }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
                 var points = "";
 
-                points += "M " + (pax - opt.resistorShort / 2) + " " + pl1 + " ";
-                points += "L " + (pax - opt.resistorShort / 2) + " " + pl2 + " ";
-                points += "L " + (pax + opt.resistorShort / 2) + " " + pl2 + " ";
-                points += "L " + (pax + opt.resistorShort / 2) + " " + pl1 + " ";
-                points += "L " + (pax - opt.resistorShort / 2) + " " + pl1;
+                if(opt.resistorOld) {
+                    points += "M " + pax + " " + pl1 + " ";
+                    points += "l " + (-opt.resistorShort / 2) + " " + (opt.resistorLongOld / 12) + " ";
+                    points += "l " + (opt.resistorShort) + " " + (opt.resistorLongOld * 2 / 12) + " ";
+                    points += "l " + (-opt.resistorShort) + " " + (opt.resistorLongOld * 2 / 12) + " ";
+                    points += "l " + (opt.resistorShort) + " " + (opt.resistorLongOld * 2 / 12) + " ";
+                    points += "l " + (-opt.resistorShort) + " " + (opt.resistorLongOld * 2 / 12) + " ";
+                    points += "l " + (opt.resistorShort) + " " + (opt.resistorLongOld * 2 / 12) + " ";
+                    points += "l " + (-opt.resistorShort / 2) + " " + (opt.resistorLongOld / 12) + " ";
+                } else {
+                    points += "M " + (pax - opt.resistorShort / 2) + " " + pl1 + " ";
+                    points += "L " + (pax - opt.resistorShort / 2) + " " + pl2 + " ";
+                    points += "L " + (pax + opt.resistorShort / 2) + " " + pl2 + " ";
+                    points += "L " + (pax + opt.resistorShort / 2) + " " + pl1 + " ";
+                    points += "L " + (pax - opt.resistorShort / 2) + " " + pl1;
+                }
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
                 svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
