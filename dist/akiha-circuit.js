@@ -339,6 +339,8 @@ function draw(loops, drawer) {
                             drawer.drawInductor(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else if(drawSerial[k].voltageAC !== undef) {
                             drawer.drawVoltageAC(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
+                        } else if(drawSerial[k].current !== undef) {
+                            drawer.drawCurrent(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else {
                             drawer.drawLine(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         }
@@ -603,7 +605,12 @@ function quadro(inputString) {
             var l = me.loops[me.loops.length - 1],
                 el = l[l.length - 1];
 
-            return el.resist !== undef || el.voltage !== undef || el.capacitance !== undef || el.inductance !== undef || el.voltageAC !== undef;
+            return el.resist !== undef ||
+                   el.voltage !== undef ||
+                   el.capacitance !== undef ||
+                   el.inductance !== undef ||
+                   el.voltageAC !== undef ||
+                   el.current !== undef;
         }
     };
     return me;
@@ -1151,6 +1158,22 @@ function akiha(input) {
                 node: function(quadro) {
                     var nodeDirection;
 
+                    function isSurroundParenthesis() {
+                        var result;
+
+                        quadro.move(LEFT);
+                        if(quadro.getChar() === "(") {
+                            quadro.move(RIGHT);
+                            quadro.move(RIGHT);
+                            result = quadro.getChar() === ")";
+                            quadro.move(LEFT);
+                        } else {
+                            quadro.move(RIGHT);
+                            result = false;
+                        }
+                        return result;
+                    }
+
                     if(isNode(quadro.getChar())) {
                         if(quadro.get().clockwiseBegin) {
                             quadro.get().clockwiseBegin = false;
@@ -1177,19 +1200,36 @@ function akiha(input) {
                             quadro.moveBackward();
                             return me.move;
                         }
+
                     } else {
                         if((/[<>]/.test(quadro.getChar()) && quadro.isDirectionHorizontal()) || (/[v^]/.test(quadro.getChar()) && quadro.isDirectionVertical())) {
                             nodeDirection = quadro.getChar();
-                            return (function(elementDefined, direction) {
-                                return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, name, text, val) {
-                                    if(!elementDefined && (quadro.getDirection() === LEFT || quadro.getDirection() === UP) ||
-                                            elementDefined && (quadro.getDirection() === RIGHT || quadro.getDirection() === DOWN)) {
-                                        loop.postCurrent = { text: text, direction: direction };
-                                    } else {
-                                        loop.preCurrent = { text: text, direction: direction };
-                                    }
-                                }), me.afterLabel);
-                            })(quadro.isElementExist(), nodeDirection);
+                            if(isSurroundParenthesis()) {
+                                quadro.elementDefined = true;
+                                if(quadro.isElementExist()) {
+                                    quadro.loopAddSerial();
+                                }
+                                return (function(direction) {
+                                            return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, name, text, val) {
+                                                loop.name = name;
+                                                loop.text = text;
+                                                loop.current = val;
+                                                loop.direction = direction;
+                                            }), me.afterLabel);
+                                       })(nodeDirection);
+                            } else {
+                                return (function(elementDefined, direction) {
+                                            return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, name, text, val) {
+                                                if(!elementDefined && (quadro.getDirection() === LEFT || quadro.getDirection() === UP) ||
+                                                        elementDefined && (quadro.getDirection() === RIGHT || quadro.getDirection() === DOWN)) {
+                                                    loop.postCurrent = { text: text, direction: direction };
+                                                } else {
+                                                    loop.preCurrent = { text: text, direction: direction };
+                                                }
+                                            }), me.afterLabel);
+                                        })(quadro.isElementExist(), nodeDirection);
+                            }
+
                         } else if(/[<>^v]/.test(quadro.getChar()) && !quadro.elementDefined) {
                             quadro.elementDefined = true;
                             if(quadro.isElementExist()) {
@@ -1200,6 +1240,7 @@ function akiha(input) {
                                 loop.text = text;
                                 loop.resist = val;
                             }), me.afterLabel);
+
                         } else if(/[cm]/.test(quadro.getChar()) && !quadro.elementDefined) {
                             quadro.elementDefined = true;
                             if(quadro.isElementExist()) {
@@ -1210,6 +1251,7 @@ function akiha(input) {
                                 loop.text = text;
                                 loop.inductance = val;
                             }), me.afterLabel);
+
                         } else if(/[~]/.test(quadro.getChar()) && !quadro.elementDefined) {
                             quadro.elementDefined = true;
                             if(quadro.isElementExist()) {
@@ -1220,6 +1262,7 @@ function akiha(input) {
                                 loop.text = text;
                                 loop.voltageAC = val;
                             }), me.afterLabel);
+
                         } else if(quadro.isDirectionVertical() && quadro.getChar() === "-" && !quadro.elementDefined) {
                             quadro.elementDefined = true;
                             if(quadro.isElementExist()) {
@@ -1244,6 +1287,7 @@ function akiha(input) {
                                     loop.voltage = -val;
                                 }), me.afterLabel);
                             }
+
                         } else if(quadro.isDirectionHorizontal() && quadro.getChar() === "|" && !quadro.elementDefined) {
                             quadro.elementDefined = true;
                             if(quadro.isElementExist()) {
@@ -1268,6 +1312,7 @@ function akiha(input) {
                                     loop.voltage = -val;
                                 }), me.afterLabel);
                             }
+
                         } else if((quadro.isDirectionVertical() && quadro.getChar() === "|") ||
                                 (quadro.isDirectionHorizontal() && quadro.getChar() === "-")) {
                             quadro.elementDefined = false;
@@ -1644,6 +1689,10 @@ var defaultOption = {
     voltageACx: 6,
     voltageACy: 8,
     voltageACFill: "none",
+    currentRadius: 10,
+    currentArrowLong: 12,
+    currentArrowShort: 4,
+    currentFill: "none",
     jointRadius: 2,
     fontFamily: "sans-serif",
     fontSize: "10pt",
@@ -1980,6 +2029,61 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 points += "q " + (opt.voltageACx / 2) + " " + (opt.voltageACy / 2) + " " + (opt.voltageACx) + " 0";
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addCircle(canvas, pax, (p4 + p3) / 2, opt.voltageACRadius, opt.stroke, opt.voltageACFill);
+                if(point1.name) {
+                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
+                } else {
+                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                }
+            }
+        ),
+
+        drawCurrent: makeDrawing(
+            opt.currentRadius * 2,
+            function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var points = "";
+
+                svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
+                svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
+                if(point1.direction === ">") {
+                    points += "M " + ((p4 + p3) / 2 - opt.currentArrowLong / 2) + " " + pay + " ";
+                    points += "l " + opt.currentArrowLong + " 0 ";
+                    points += "l " + (-opt.currentArrowShort) + " " + (-opt.currentArrowShort) + " ";
+                    points += "m 0 " + (opt.currentArrowShort * 2) + " ";
+                    points += "l " + opt.currentArrowShort + " " + (-opt.currentArrowShort) + " ";
+                } else {
+                    points += "M " + ((p4 + p3) / 2 + opt.currentArrowLong / 2) + " " + pay + " ";
+                    points += "l " + (-opt.currentArrowLong) + " 0 ";
+                    points += "l " + opt.currentArrowShort + " " + (-opt.currentArrowShort) + " ";
+                    points += "m 0 " + (opt.currentArrowShort * 2) + " ";
+                    points += "l " + (-opt.currentArrowShort) + " " + (-opt.currentArrowShort) + " ";
+                }
+                svg.addPath(canvas, points, opt.fill, opt.stroke);
+                svg.addCircle(canvas, (p4 + p3) / 2, pay, opt.currentRadius, opt.stroke, opt.currentFill);
+                svg.addText(canvas, point1.text, pl1, pay - opt.textMargin, opt);
+                if(point1.name) {
+                    svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
+                }
+            }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var points = "";
+
+                svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
+                svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
+                if(point1.direction === "v") {
+                    points += "M " + pax + " " + ((p4 + p3) / 2 - opt.currentArrowLong / 2);
+                    points += "l 0 " + opt.currentArrowLong + " ";
+                    points += "l " + (-opt.currentArrowShort) + " " + (-opt.currentArrowShort) + " ";
+                    points += "m " + (opt.currentArrowShort * 2) + " 0 ";
+                    points += "l " + (-opt.currentArrowShort) + " " + opt.currentArrowShort + " ";
+                } else {
+                    points += "M " + pax + " " + ((p4 + p3) / 2 + opt.currentArrowLong / 2);
+                    points += "l 0 " + (-opt.currentArrowLong) + " ";
+                    points += "l " + (-opt.currentArrowShort) + " " + opt.currentArrowShort + " ";
+                    points += "m " + (opt.currentArrowShort * 2) + " 0 ";
+                    points += "l " + (-opt.currentArrowShort) + " " + (-opt.currentArrowShort) + " ";
+                }
+                svg.addPath(canvas, points, opt.fill, opt.stroke);
+                svg.addCircle(canvas, pax, (p4 + p3) / 2, opt.currentRadius, opt.stroke, opt.currentFill);
                 if(point1.name) {
                     svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);

@@ -27,6 +27,10 @@ var defaultOption = {
     voltageACx: 6,
     voltageACy: 8,
     voltageACFill: "none",
+    currentRadius: 10,
+    currentArrowLong: 12,
+    currentArrowShort: 4,
+    currentFill: "none",
     jointRadius: 2,
     fontFamily: "sans-serif",
     fontSize: "10pt",
@@ -363,6 +367,61 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 points += "q " + (opt.voltageACx / 2) + " " + (opt.voltageACy / 2) + " " + (opt.voltageACx) + " 0";
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addCircle(canvas, pax, (p4 + p3) / 2, opt.voltageACRadius, opt.stroke, opt.voltageACFill);
+                if(point1.name) {
+                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
+                } else {
+                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                }
+            }
+        ),
+
+        drawCurrent: makeDrawing(
+            opt.currentRadius * 2,
+            function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var points = "";
+
+                svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
+                svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
+                if(point1.direction === ">") {
+                    points += "M " + ((p4 + p3) / 2 - opt.currentArrowLong / 2) + " " + pay + " ";
+                    points += "l " + opt.currentArrowLong + " 0 ";
+                    points += "l " + (-opt.currentArrowShort) + " " + (-opt.currentArrowShort) + " ";
+                    points += "m 0 " + (opt.currentArrowShort * 2) + " ";
+                    points += "l " + opt.currentArrowShort + " " + (-opt.currentArrowShort) + " ";
+                } else {
+                    points += "M " + ((p4 + p3) / 2 + opt.currentArrowLong / 2) + " " + pay + " ";
+                    points += "l " + (-opt.currentArrowLong) + " 0 ";
+                    points += "l " + opt.currentArrowShort + " " + (-opt.currentArrowShort) + " ";
+                    points += "m 0 " + (opt.currentArrowShort * 2) + " ";
+                    points += "l " + (-opt.currentArrowShort) + " " + (-opt.currentArrowShort) + " ";
+                }
+                svg.addPath(canvas, points, opt.fill, opt.stroke);
+                svg.addCircle(canvas, (p4 + p3) / 2, pay, opt.currentRadius, opt.stroke, opt.currentFill);
+                svg.addText(canvas, point1.text, pl1, pay - opt.textMargin, opt);
+                if(point1.name) {
+                    svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
+                }
+            }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var points = "";
+
+                svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
+                svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
+                if(point1.direction === "v") {
+                    points += "M " + pax + " " + ((p4 + p3) / 2 - opt.currentArrowLong / 2);
+                    points += "l 0 " + opt.currentArrowLong + " ";
+                    points += "l " + (-opt.currentArrowShort) + " " + (-opt.currentArrowShort) + " ";
+                    points += "m " + (opt.currentArrowShort * 2) + " 0 ";
+                    points += "l " + (-opt.currentArrowShort) + " " + opt.currentArrowShort + " ";
+                } else {
+                    points += "M " + pax + " " + ((p4 + p3) / 2 + opt.currentArrowLong / 2);
+                    points += "l 0 " + (-opt.currentArrowLong) + " ";
+                    points += "l " + (-opt.currentArrowShort) + " " + opt.currentArrowShort + " ";
+                    points += "m " + (opt.currentArrowShort * 2) + " 0 ";
+                    points += "l " + (-opt.currentArrowShort) + " " + (-opt.currentArrowShort) + " ";
+                }
+                svg.addPath(canvas, points, opt.fill, opt.stroke);
+                svg.addCircle(canvas, pax, (p4 + p3) / 2, opt.currentRadius, opt.stroke, opt.currentFill);
                 if(point1.name) {
                     svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
