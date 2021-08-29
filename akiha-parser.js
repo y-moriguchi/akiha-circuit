@@ -20,7 +20,7 @@ function log(message) {
 }
 
 function isNode(ch) {
-    return ch !== BOUND && /[\*\+]/.test(ch);
+    return ch !== BOUND && /[\*\+ox]/.test(ch);
 }
 
 function quadro(inputString) {
@@ -183,14 +183,35 @@ function quadro(inputString) {
             return me;
         },
 
-        loopAdd: function() {
-            var neighbor = 0;
+        loopAdd: function(nodeType) {
+            var neighbor = 0,
+                terminal,
+                noNode,
+                terminalLabelLeft = "",
+                terminalLabelRight = "";
 
             neighbor += me.isWhitespace(1, 0) ? 0 : 1;
             neighbor += me.isWhitespace(-1, 0) ? 0 : 1;
             neighbor += me.isWhitespace(0, 1) ? 0 : 1;
             neighbor += me.isWhitespace(0, -1) ? 0 : 1;
-            me.loops[me.loops.length - 1].push({ x: xNow, y: yNow, neighbor: neighbor });
+            if(nodeType === "o") {
+                terminal = true;
+            } else if(nodeType === "x") {
+                noNode = true;
+            }
+            terminalLabelLeft = me.isWhitespace(-1, -1) ? terminalLabelLeft : me.getChar(-1, -1);
+            terminalLabelLeft = me.isWhitespace(-1, 1)? terminalLabelLeft : me.getChar(-1, 1);
+            terminalLabelRight = me.isWhitespace(1, -1) ? terminalLabelRight : me.getChar(1, -1);
+            terminalLabelRight = me.isWhitespace(1, 1) ? terminalLabelRight : me.getChar(1, 1);
+            me.loops[me.loops.length - 1].push({
+                x: xNow,
+                y: yNow,
+                neighbor: neighbor,
+                terminal: terminal,
+                noNode: noNode,
+                terminalLabelLeft: terminalLabelLeft,
+                terminalLabelRight: terminalLabelRight
+            });
             return me;
         },
 
@@ -759,7 +780,7 @@ function akiha(input) {
 
                 move: function(quadro) {
                     if(isNode(quadro.getChar())) {
-                        quadro.loopAdd();
+                        quadro.loopAdd(quadro.getChar());
                         quadro.get().cellScanned = quadro.getDirection();
                         quadro.moveForward();
                         return me.node;
@@ -771,7 +792,8 @@ function akiha(input) {
                 },
 
                 node: function(quadro) {
-                    var nodeDirection;
+                    var nodeDirection,
+                        nodeType;
 
                     function isSurroundParenthesis() {
                         var result;
@@ -790,9 +812,10 @@ function akiha(input) {
                     }
 
                     if(isNode(quadro.getChar())) {
+                        nodeType = quadro.getChar();
                         if(quadro.get().clockwiseBegin) {
                             quadro.get().clockwiseBegin = false;
-                            quadro.loopAdd();
+                            quadro.loopAdd(nodeType);
                             return returnMachine;
                         }
                         quadro.turnRight().moveForward();
@@ -807,7 +830,7 @@ function akiha(input) {
                                 }
                             }
                             quadro.moveBackward();
-                            quadro.loopAdd();
+                            quadro.loopAdd(nodeType);
                             quadro.get().cellScanned = quadro.getDirection();
                             quadro.moveForward();
                             return me.node;
@@ -817,7 +840,10 @@ function akiha(input) {
                         }
 
                     } else {
-                        if((/[<>]/.test(quadro.getChar()) && quadro.isDirectionHorizontal()) || (/[v^]/.test(quadro.getChar()) && quadro.isDirectionVertical())) {
+                        if(quadro.getChar() === ":") {
+                            quadro.getLoop().noWire = true;
+
+                        } else if((/[<>]/.test(quadro.getChar()) && quadro.isDirectionHorizontal()) || (/[v^]/.test(quadro.getChar()) && quadro.isDirectionVertical())) {
                             nodeDirection = quadro.getChar();
                             if(isSurroundParenthesis()) {
                                 quadro.elementDefined = true;

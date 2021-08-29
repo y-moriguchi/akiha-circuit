@@ -8,7 +8,8 @@
  **/
 var common = require("./akiha-common.js");
 var defaultOption = {
-    sideLength: 110,
+    sideLengthX: 110,
+    sideLengthY: 110,
     marginX: 70,
     marginY: 60,
     stroke: "#000000",
@@ -38,7 +39,10 @@ var defaultOption = {
     polarityLength: 12,
     polarityLengthMinor: 4,
     arrowSize: 6,
-    arrowFill: "black"
+    arrowFill: "black",
+    terminalRadius: 3,
+    terminalFill: "white",
+    terminalLabelMargin: 14
 };
 
 function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
@@ -52,8 +56,8 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
             result;
 
         result = {
-            x: opt.marginX + rpoint.x * opt.sideLength,
-            y: opt.marginY + rpoint.y * opt.sideLength
+            x: opt.marginX + rpoint.x * opt.sideLengthX,
+            y: opt.marginY + rpoint.y * opt.sideLengthY
         };
         return result;
     }
@@ -162,7 +166,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
             sideLen = sideLength;
             xLen = sideLen.getLength({ x: 0, y: 0 }, { x: xMaxNodes - 1, y: 0 }).x;
             yLen = sideLen.getLength({ x: 0, y: 0 }, { x: 0, y: yMaxNodes - 1 }).y;
-            canvas = svg.createCanvas(opt.marginX * 2 + xLen * opt.sideLength, opt.marginY * 2 + yLen * opt.sideLength);
+            canvas = svg.createCanvas(opt.marginX * 2 + xLen * opt.sideLengthX, opt.marginY * 2 + yLen * opt.sideLengthY);
         },
 
         drawLine: function(point1, point2) {
@@ -171,6 +175,18 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
 
         drawJoint: function(point) {
             svg.addCircle(canvas, getPoint(point).x, getPoint(point).y, opt.jointRadius, opt.stroke);
+        },
+
+        drawTerminal: function(point) {
+            var p = getPoint(point);
+
+            svg.addCircle(canvas, p.x, p.y, opt.terminalRadius, opt.stroke, opt.terminalFill);
+            if(point.terminalLabelLeft) {
+                svg.addText(canvas, point.terminalLabelLeft, p.x - opt.terminalLabelMargin, p.y, opt);
+            }
+            if(point.terminalLabelRight) {
+                svg.addText(canvas, point.terminalLabelRight, p.x + opt.terminalRadius * 2, p.y, opt);
+            }
         },
 
         drawResistor: makeDrawing(

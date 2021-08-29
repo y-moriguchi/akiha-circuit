@@ -60,6 +60,7 @@ function draw(loops, drawer) {
             j,
             nowLength,
             nowPoint,
+            drawTerminal,
             sideLengthX = createSideLength("x"),
             sideLengthY = createSideLength("y");
 
@@ -122,9 +123,12 @@ function draw(loops, drawer) {
             drawSerial.push(loops[i][j]);
             if(!isSamePosition(loops[i][j], loops[i][j + 1])) {
                 if(!isSideDrawn(loops[i][j], loops[i][j + 1])) {
+                    drawTerminal = false;
                     if(!isPointDrawn(loops[i][j])) {
                         drawnPoints.push(loops[i][j]);
-                        if(loops[i][j].neighbor > 2) {
+                        if(loops[i][j].terminal) {
+                            drawTerminal = true;
+                        } else if(!loops[i][j].noNode && loops[i][j].neighbor > 2) {
                             drawer.drawJoint(loops[i][j]);
                         }
                     }
@@ -143,9 +147,13 @@ function draw(loops, drawer) {
                             drawer.drawVoltageAC(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else if(drawSerial[k].current !== undef) {
                             drawer.drawCurrent(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
-                        } else {
+                        } else if(!drawSerial[k].noWire) {
                             drawer.drawLine(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         }
+                    }
+
+                    if(drawTerminal) {
+                        drawer.drawTerminal(loops[i][j]);
                     }
                 }
                 drawSerial = [];

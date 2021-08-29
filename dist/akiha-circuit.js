@@ -258,6 +258,7 @@ function draw(loops, drawer) {
             j,
             nowLength,
             nowPoint,
+            drawTerminal,
             sideLengthX = createSideLength("x"),
             sideLengthY = createSideLength("y");
 
@@ -320,9 +321,12 @@ function draw(loops, drawer) {
             drawSerial.push(loops[i][j]);
             if(!isSamePosition(loops[i][j], loops[i][j + 1])) {
                 if(!isSideDrawn(loops[i][j], loops[i][j + 1])) {
+                    drawTerminal = false;
                     if(!isPointDrawn(loops[i][j])) {
                         drawnPoints.push(loops[i][j]);
-                        if(loops[i][j].neighbor > 2) {
+                        if(loops[i][j].terminal) {
+                            drawTerminal = true;
+                        } else if(!loops[i][j].noNode && loops[i][j].neighbor > 2) {
                             drawer.drawJoint(loops[i][j]);
                         }
                     }
@@ -341,9 +345,13 @@ function draw(loops, drawer) {
                             drawer.drawVoltageAC(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else if(drawSerial[k].current !== undef) {
                             drawer.drawCurrent(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
-                        } else {
+                        } else if(!drawSerial[k].noWire) {
                             drawer.drawLine(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         }
+                    }
+
+                    if(drawTerminal) {
+                        drawer.drawTerminal(loops[i][j]);
                     }
                 }
                 drawSerial = [];
@@ -405,7 +413,7 @@ function log(message) {
 }
 
 function isNode(ch) {
-    return ch !== BOUND && /[\*\+]/.test(ch);
+    return ch !== BOUND && /[\*\+ox]/.test(ch);
 }
 
 function quadro(inputString) {
@@ -568,14 +576,35 @@ function quadro(inputString) {
             return me;
         },
 
-        loopAdd: function() {
-            var neighbor = 0;
+        loopAdd: function(nodeType) {
+            var neighbor = 0,
+                terminal,
+                noNode,
+                terminalLabelLeft = "",
+                terminalLabelRight = "";
 
             neighbor += me.isWhitespace(1, 0) ? 0 : 1;
             neighbor += me.isWhitespace(-1, 0) ? 0 : 1;
             neighbor += me.isWhitespace(0, 1) ? 0 : 1;
             neighbor += me.isWhitespace(0, -1) ? 0 : 1;
-            me.loops[me.loops.length - 1].push({ x: xNow, y: yNow, neighbor: neighbor });
+            if(nodeType === "o") {
+                terminal = true;
+            } else if(nodeType === "x") {
+                noNode = true;
+            }
+            terminalLabelLeft = me.isWhitespace(-1, -1) ? terminalLabelLeft : me.getChar(-1, -1);
+            terminalLabelLeft = me.isWhitespace(-1, 1)? terminalLabelLeft : me.getChar(-1, 1);
+            terminalLabelRight = me.isWhitespace(1, -1) ? terminalLabelRight : me.getChar(1, -1);
+            terminalLabelRight = me.isWhitespace(1, 1) ? terminalLabelRight : me.getChar(1, 1);
+            me.loops[me.loops.length - 1].push({
+                x: xNow,
+                y: yNow,
+                neighbor: neighbor,
+                terminal: terminal,
+                noNode: noNode,
+                terminalLabelLeft: terminalLabelLeft,
+                terminalLabelRight: terminalLabelRight
+            });
             return me;
         },
 
@@ -1144,7 +1173,7 @@ function akiha(input) {
 
                 move: function(quadro) {
                     if(isNode(quadro.getChar())) {
-                        quadro.loopAdd();
+                        quadro.loopAdd(quadro.getChar());
                         quadro.get().cellScanned = quadro.getDirection();
                         quadro.moveForward();
                         return me.node;
@@ -1156,7 +1185,8 @@ function akiha(input) {
                 },
 
                 node: function(quadro) {
-                    var nodeDirection;
+                    var nodeDirection,
+                        nodeType;
 
                     function isSurroundParenthesis() {
                         var result;
@@ -1175,9 +1205,10 @@ function akiha(input) {
                     }
 
                     if(isNode(quadro.getChar())) {
+                        nodeType = quadro.getChar();
                         if(quadro.get().clockwiseBegin) {
                             quadro.get().clockwiseBegin = false;
-                            quadro.loopAdd();
+                            quadro.loopAdd(nodeType);
                             return returnMachine;
                         }
                         quadro.turnRight().moveForward();
@@ -1192,7 +1223,7 @@ function akiha(input) {
                                 }
                             }
                             quadro.moveBackward();
-                            quadro.loopAdd();
+                            quadro.loopAdd(nodeType);
                             quadro.get().cellScanned = quadro.getDirection();
                             quadro.moveForward();
                             return me.node;
@@ -1202,7 +1233,10 @@ function akiha(input) {
                         }
 
                     } else {
-                        if((/[<>]/.test(quadro.getChar()) && quadro.isDirectionHorizontal()) || (/[v^]/.test(quadro.getChar()) && quadro.isDirectionVertical())) {
+                        if(quadro.getChar() === ":") {
+                            quadro.getLoop().noWire = true;
+
+                        } else if((/[<>]/.test(quadro.getChar()) && quadro.isDirectionHorizontal()) || (/[v^]/.test(quadro.getChar()) && quadro.isDirectionVertical())) {
                             nodeDirection = quadro.getChar();
                             if(isSurroundParenthesis()) {
                                 quadro.elementDefined = true;
@@ -1670,7 +1704,8 @@ module.exports = {
  **/
 var common = require("./akiha-common.js");
 var defaultOption = {
-    sideLength: 110,
+    sideLengthX: 110,
+    sideLengthY: 110,
     marginX: 70,
     marginY: 60,
     stroke: "#000000",
@@ -1700,7 +1735,10 @@ var defaultOption = {
     polarityLength: 12,
     polarityLengthMinor: 4,
     arrowSize: 6,
-    arrowFill: "black"
+    arrowFill: "black",
+    terminalRadius: 3,
+    terminalFill: "white",
+    terminalLabelMargin: 14
 };
 
 function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
@@ -1714,8 +1752,8 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
             result;
 
         result = {
-            x: opt.marginX + rpoint.x * opt.sideLength,
-            y: opt.marginY + rpoint.y * opt.sideLength
+            x: opt.marginX + rpoint.x * opt.sideLengthX,
+            y: opt.marginY + rpoint.y * opt.sideLengthY
         };
         return result;
     }
@@ -1824,7 +1862,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
             sideLen = sideLength;
             xLen = sideLen.getLength({ x: 0, y: 0 }, { x: xMaxNodes - 1, y: 0 }).x;
             yLen = sideLen.getLength({ x: 0, y: 0 }, { x: 0, y: yMaxNodes - 1 }).y;
-            canvas = svg.createCanvas(opt.marginX * 2 + xLen * opt.sideLength, opt.marginY * 2 + yLen * opt.sideLength);
+            canvas = svg.createCanvas(opt.marginX * 2 + xLen * opt.sideLengthX, opt.marginY * 2 + yLen * opt.sideLengthY);
         },
 
         drawLine: function(point1, point2) {
@@ -1833,6 +1871,18 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
 
         drawJoint: function(point) {
             svg.addCircle(canvas, getPoint(point).x, getPoint(point).y, opt.jointRadius, opt.stroke);
+        },
+
+        drawTerminal: function(point) {
+            var p = getPoint(point);
+
+            svg.addCircle(canvas, p.x, p.y, opt.terminalRadius, opt.stroke, opt.terminalFill);
+            if(point.terminalLabelLeft) {
+                svg.addText(canvas, point.terminalLabelLeft, p.x - opt.terminalLabelMargin, p.y, opt);
+            }
+            if(point.terminalLabelRight) {
+                svg.addText(canvas, point.terminalLabelRight, p.x + opt.terminalRadius * 2, p.y, opt);
+            }
         },
 
         drawResistor: makeDrawing(
