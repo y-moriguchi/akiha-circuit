@@ -36,7 +36,7 @@ function makeMkdir(imageDir) {
     }
 }
 
-function makeimg(imageDir, dataUri) {
+function makeimg(imageDir, dataUri, option) {
     var num = 1,
         mkdir = makeMkdir(imageDir);
 
@@ -44,7 +44,7 @@ function makeimg(imageDir, dataUri) {
         var foutput,
             imgfn,
             result;
-        foutput = akiha.createSvg(input, svgLib).toString();
+        foutput = akiha.createSvg(input, svgLib, option).toString();
         if(dataUri) {
             throw new Error("Data URI is not supported");
         } else {
@@ -116,7 +116,7 @@ function preprocessimg(beginPatterns, endPatterns, imgOutput, useDataUri) {
             state = "INIT",
             match = null,
             dataUri = useDataUri && opt.direction.dataUri;
-            img = makeimg(opt.direction.imageDir, dataUri),
+            img = makeimg(opt.direction.imageDir, dataUri, opt.config),
             imgfn = {};
 
         initPattern(opt.option);
@@ -170,7 +170,7 @@ function preprocess(pptype, file, opt) {
                 return 0;
             } catch(err) {
                 console.error('File %s can not read', file);
-                throw err;
+                //throw err;
                 return 2;
             }
         }
