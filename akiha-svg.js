@@ -34,7 +34,9 @@ var defaultOption = {
     currentFill: "none",
     jointRadius: 2,
     fontFamily: "sans-serif",
-    fontSize: "10pt",
+    fontSize: 14,
+    fontSubscriptSize: 8,
+    fontSubscriptMargin: 1,
     textMargin: 14,
     polarityLength: 12,
     polarityLengthMinor: 4,
@@ -45,11 +47,119 @@ var defaultOption = {
     terminalLabelMargin: 14
 };
 
+var widths = [];
+
+// ASCII, Latin-2
+widths[0x21] = 0.278125;
+widths[0x22] = 0.35546875;
+widths[0x23] = 0.55625;
+widths[0x24] = 0.55625;
+widths[0x25] = 0.88984375;
+widths[0x26] = 0.6671875;
+widths[0x27] = 0.19140625;
+widths[0x28] = 0.33359375;
+widths[0x29] = 0.33359375;
+widths[0x2a] = 0.38984375;
+widths[0x2b] = 0.584375;
+widths[0x2c] = 0.278125;
+widths[0x2d] = 0.33359375;
+widths[0x2e] = 0.278125;
+widths[0x2f] = 0.278125;
+widths[0x30] = 0.55625;
+widths[0x31] = 0.55625;
+widths[0x32] = 0.55625;
+widths[0x33] = 0.55625;
+widths[0x34] = 0.55625;
+widths[0x35] = 0.55625;
+widths[0x36] = 0.55625;
+widths[0x37] = 0.55625;
+widths[0x38] = 0.55625;
+widths[0x39] = 0.55625;
+widths[0x3a] = 0.278125;
+widths[0x3b] = 0.278125;
+widths[0x3c] = 0.584375;
+widths[0x3d] = 0.584375;
+widths[0x3e] = 0.584375;
+widths[0x3f] = 0.55625;
+widths[0x40] = 1.015625;
+widths[0x41] = 0.6671875;
+widths[0x42] = 0.6671875;
+widths[0x43] = 0.72265625;
+widths[0x44] = 0.72265625;
+widths[0x45] = 0.6671875;
+widths[0x46] = 0.6109375;
+widths[0x47] = 0.778125;
+widths[0x48] = 0.72265625;
+widths[0x49] = 0.278125;
+widths[0x4a] = 0.5;
+widths[0x4b] = 0.6671875;
+widths[0x4c] = 0.55625;
+widths[0x4d] = 0.83359375;
+widths[0x4e] = 0.72265625;
+widths[0x4f] = 0.778125;
+widths[0x50] = 0.6671875;
+widths[0x51] = 0.778125;
+widths[0x52] = 0.72265625;
+widths[0x53] = 0.6671875;
+widths[0x54] = 0.6109375;
+widths[0x55] = 0.72265625;
+widths[0x56] = 0.6671875;
+widths[0x57] = 0.94453125;
+widths[0x58] = 0.6671875;
+widths[0x59] = 0.6671875;
+widths[0x5a] = 0.6109375;
+widths[0x5b] = 0.278125;
+widths[0x5c] = 0.55625;
+widths[0x5d] = 0.278125;
+widths[0x5e] = 0.46953125;
+widths[0x5f] = 0.55625;
+widths[0x60] = 0.33359375;
+widths[0x61] = 0.55625;
+widths[0x62] = 0.55625;
+widths[0x63] = 0.5;
+widths[0x64] = 0.55625;
+widths[0x65] = 0.55625;
+widths[0x66] = 0.278125;
+widths[0x67] = 0.55625;
+widths[0x68] = 0.55625;
+widths[0x69] = 0.22265625;
+widths[0x6a] = 0.22265625;
+widths[0x6b] = 0.5;
+widths[0x6c] = 0.22265625;
+widths[0x6d] = 0.83359375;
+widths[0x6e] = 0.55625;
+widths[0x6f] = 0.55625;
+widths[0x70] = 0.55625;
+widths[0x71] = 0.55625;
+widths[0x72] = 0.33359375;
+widths[0x73] = 0.5;
+widths[0x74] = 0.278125;
+widths[0x75] = 0.55625;
+widths[0x76] = 0.5;
+widths[0x77] = 0.72265625;
+widths[0x78] = 0.5;
+widths[0x79] = 0.5;
+widths[0x7a] = 0.5;
+widths[0x7b] = 0.334375;
+widths[0x7c] = 0.26015625;
+widths[0x7d] = 0.334375;
+widths[0x7e] = 0.584375;
+
 function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
     var me,
         canvas,
         sideLen,
         opt = option ? common.extend(defaultOption, option) : defaultOption;
+
+    function getTextWidth(text, baseWidth) {
+        var i,
+            result = opt.fontSubscriptMargin;
+
+        for(i = 0; i < text.length; i++) {
+            result += baseWidth * widths[text.charCodeAt(i)];
+        }
+        return result;
+    }
 
     function getPoint(point) {
         var rpoint = sideLen.getLength({ x: 0, y: 0 }, point),
@@ -192,7 +302,8 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         drawResistor: makeDrawing(
             opt.resistorOld ? opt.resistorLongOld : opt.resistorLong,
             function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
-                var points = "";
+                var points = "",
+                    textSplit = point1.text.split("_");
 
                 if(opt.resistorOld) {
                     points += "M " + pl1 + " " + pay + " ";
@@ -213,12 +324,16 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
                 svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
-                svg.addText(canvas, point1.text, pl1, pay - opt.textMargin, opt);
+                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
+                if(textSplit[1]) {
+                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, opt.fontSubscriptSize);
+                }
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
             }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
-                var points = "";
+                var points = "",
+                    textSplit = point1.text.split("_");
 
                 if(opt.resistorOld) {
                     points += "M " + pax + " " + pl1 + " ";
@@ -240,10 +355,22 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
                 svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
                 if(point1.name) {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                 }
             }
         ),
@@ -251,6 +378,8 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         drawBattery: makeDrawing(
             opt.batteryGap,
             function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var textSplit = point1.text.split("_");
+
                 svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
                 svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
                 if((point1.voltage > 0 && p1x === pax) || (point1.voltage <= 0 && p1x !== pax)) {
@@ -260,11 +389,16 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                     svg.addLine(canvas, pl2, pay - opt.batteryLong / 2, pl2, pay + opt.batteryLong / 2, opt.stroke);
                     svg.addLine(canvas, pl1, pay - opt.batteryShort / 2, pl1, pay + opt.batteryShort / 2, opt.stroke);
                 }
-                svg.addText(canvas, point1.text, pl1, pay - opt.textMargin, opt);
+                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
+                if(textSplit[1]) {
+                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, opt.fontSubscriptSize);
+                }
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
             }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var textSplit = point1.text.split("_");
+
                 svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
                 svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
                 if((point1.voltage > 0 && p1y === pay) || (point1.voltage <= 0 && p1y !== pay)) {
@@ -275,10 +409,22 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                     svg.addLine(canvas, pax - opt.batteryShort / 2, pl1, pax + opt.batteryShort / 2, pl1, opt.stroke);
                 }
                 if(point1.name) {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                 }
             }
         ),
@@ -286,24 +432,43 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         drawCapacitor: makeDrawing(
             opt.capacitorGap,
             function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var textSplit = point1.text.split("_");
+
                 svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
                 svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
                 svg.addLine(canvas, pl1, pay - opt.capacitorLength / 2, pl1, pay + opt.capacitorLength / 2, opt.stroke);
                 svg.addLine(canvas, pl2, pay - opt.capacitorLength / 2, pl2, pay + opt.capacitorLength / 2, opt.stroke);
-                svg.addText(canvas, point1.text, pl1, pay - opt.textMargin, opt);
+                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
+                if(textSplit[1]) {
+                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, opt.fontSubscriptSize);
+                }
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
             }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var textSplit = point1.text.split("_");
+
                 svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
                 svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
                 svg.addLine(canvas, pax - opt.capacitorLength / 2, pl1, pax + opt.capacitorLength / 2, pl1, opt.stroke);
                 svg.addLine(canvas, pax - opt.capacitorLength / 2, pl2, pax + opt.capacitorLength / 2, pl2, opt.stroke);
                 if(point1.name) {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                 }
             }
         ),
@@ -311,6 +476,8 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         drawInductor: makeDrawing(
             opt.inductorLength,
             function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var textSplit = point1.text.split("_");
+
                 function drawCoil1(num) {
                     var points = "";
 
@@ -325,11 +492,16 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 drawCoil1(1);
                 drawCoil1(2);
                 drawCoil1(3);
-                svg.addText(canvas, point1.text, pl1, pay - opt.textMargin, opt);
+                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
+                if(textSplit[1]) {
+                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, opt.fontSubscriptSize);
+                }
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
             }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var textSplit = point1.text.split("_");
+
                 function drawCoil1(num) {
                     var points = "";
 
@@ -345,10 +517,22 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 drawCoil1(2);
                 drawCoil1(3);
                 if(point1.name) {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                 }
             }
         ),
@@ -356,7 +540,8 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         drawVoltageAC: makeDrawing(
             opt.voltageACRadius * 2,
             function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
-                var points = "";
+                var points = "",
+                    textSplit = point1.text.split("_");
 
                 svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
                 svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
@@ -367,12 +552,16 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 points += "q " + (opt.voltageACx / 2) + " " + (opt.voltageACy / 2) + " " + (opt.voltageACx) + " 0";
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addCircle(canvas, (p4 + p3) / 2, pay, opt.voltageACRadius, opt.stroke, opt.voltageACFill);
-                svg.addText(canvas, point1.text, pl1, pay - opt.textMargin, opt);
+                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
+                if(textSplit[1]) {
+                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, opt.fontSubscriptSize);
+                }
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
             }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
-                var points = "";
+                var points = "",
+                    textSplit = point1.text.split("_");
 
                 svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
                 svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
@@ -384,10 +573,22 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addCircle(canvas, pax, (p4 + p3) / 2, opt.voltageACRadius, opt.stroke, opt.voltageACFill);
                 if(point1.name) {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                 }
             }
         ),
@@ -395,7 +596,8 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         drawCurrent: makeDrawing(
             opt.currentRadius * 2,
             function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
-                var points = "";
+                var points = "",
+                    textSplit = point1.text.split("_");
 
                 svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
                 svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
@@ -414,12 +616,16 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 }
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addCircle(canvas, (p4 + p3) / 2, pay, opt.currentRadius, opt.stroke, opt.currentFill);
-                svg.addText(canvas, point1.text, pl1, pay - opt.textMargin, opt);
+                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
+                if(textSplit[1]) {
+                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, opt.fontSubscriptSize);
+                }
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
             }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
-                var points = "";
+                var points = "",
+                    textSplit = point1.text.split("_");
 
                 svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
                 svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
@@ -439,10 +645,22 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addCircle(canvas, pax, (p4 + p3) / 2, opt.currentRadius, opt.stroke, opt.currentFill);
                 if(point1.name) {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, point1.text, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                    if(textSplit[1]) {
+                        svg.addText(canvas,
+                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                            p3 + (p4 - p3) / 2,
+                            opt, opt.fontSubscriptSize);
+                    }
                 }
             }
         ),

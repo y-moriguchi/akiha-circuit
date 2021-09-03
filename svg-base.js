@@ -32,13 +32,13 @@ function createSvg(base) {
             toAdd.appendChild(node);
         },
 
-        addText: function(toAdd, text, x, y, opt) {
+        addText: function(toAdd, text, x, y, opt, size) {
             var node = me.createNode("text");
 
             node.setAttribute("x", x);
             node.setAttribute("y", y);
             node.setAttribute("font-family", opt.fontFamily);
-            node.setAttribute("font-size", opt.fontSize);
+            node.setAttribute("font-size", size ? size : opt.fontSize);
             node.textContent = text;
             toAdd.appendChild(node);
         },

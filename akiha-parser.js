@@ -989,7 +989,7 @@ function akiha(input) {
         })();
 
         function makeMachineScanLabel(direction, setFunction) {
-            var labelChars = /[0-9A-Za-zΩµ\.]/,
+            var labelChars = /[0-9A-Za-zΩµ\._]/,
                 me;
 
             var machineScanLabelLeft = (function() {
