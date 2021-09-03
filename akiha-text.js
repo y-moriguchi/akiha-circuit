@@ -155,10 +155,24 @@ function preprocessimg(beginPatterns, endPatterns, imgOutput, useDataUri) {
 
 function preprocess(pptype, file, opt) {
     var i,
+        matchRaw,
+        foutput,
         match,
         input,
         output,
         pp = preprocessors[pptype];
+
+    matchRaw = /^(.*).akihac$/.exec(file);
+    if(matchRaw) {
+        try {
+            input = fs.readFileSync(file, 'utf8');
+        } catch(e) {
+            console.error('File %s can not read', file);
+        }
+        foutput = akiha.createSvg(input, svgLib, opt).toString();
+        fs.writeFileSync(matchRaw[1] + ".svg", foutput);
+        return 0;
+    }
 
     for(i = 0; i < pp.length; i++) {
         match = pp[i].pattern.exec(file);
