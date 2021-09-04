@@ -24,6 +24,8 @@ var defaultOption = {
     capacitorGap: 10,
     capacitorLength: 16,
     inductorLength: 40,
+    inductorOld: false,
+    inductorOldRadius: 8,
     voltageACRadius: 10,
     voltageACx: 6,
     voltageACy: 8,
@@ -483,7 +485,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         ),
 
         drawInductor: makeDrawing(
-            opt.inductorLength,
+            opt.inductorOld ? opt.inductorOldRadius * 55 / 12.5 : opt.inductorLength,
             function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
                 var textSplit = point1.text.split("_");
 
@@ -495,12 +497,30 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                     points += "0 0 1 " + opt.inductorLength / 4 + " 0";
                     svg.addPath(canvas, points, opt.fill, opt.stroke);
                 }
+
+                function drawCoilOld() {
+                    var points = "";
+
+                    points += "M " + pl1 + " " + pay + " ";
+                    points += "a " + opt.inductorOldRadius + " " + opt.inductorOldRadius + " ";
+                    points += "0 1 1 " + (opt.inductorOldRadius * 20 / 12.5) + " " + (opt.inductorOldRadius * 10 / 12.5) + " ";
+                    points += "a " + opt.inductorOldRadius + " " + opt.inductorOldRadius + " ";
+                    points += "0 1 1 " + (opt.inductorOldRadius * 15 / 12.5) + " 0 ";
+                    points += "a " + opt.inductorOldRadius + " " + opt.inductorOldRadius + " ";
+                    points += "0 1 1 " + (opt.inductorOldRadius * 20 / 12.5) + " -" + (opt.inductorOldRadius * 10 / 12.5) + " ";
+                    svg.addPath(canvas, points, opt.fill, opt.stroke);
+                }
+
                 svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
                 svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
-                drawCoil1(0);
-                drawCoil1(1);
-                drawCoil1(2);
-                drawCoil1(3);
+                if(opt.inductorOld) {
+                    drawCoilOld();
+                } else {
+                    drawCoil1(0);
+                    drawCoil1(1);
+                    drawCoil1(2);
+                    drawCoil1(3);
+                }
                 svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
                 if(textSplit[1]) {
                     svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, fontSubscriptSize());
@@ -519,12 +539,30 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                     points += "90 0 1 0 " + opt.inductorLength / 4;
                     svg.addPath(canvas, points, opt.fill, opt.stroke);
                 }
+
+                function drawCoilOld() {
+                    var points = "";
+
+                    points += "M " + pax + " " + pl1 + " ";
+                    points += "a " + opt.inductorOldRadius + " " + opt.inductorOldRadius + " ";
+                    points += "0 1 0 " + (opt.inductorOldRadius * 10 / 12.5) + " " + (opt.inductorOldRadius * 20 / 12.5) + " ";
+                    points += "a " + opt.inductorOldRadius + " " + opt.inductorOldRadius + " ";
+                    points += "0 1 0 0 " + (opt.inductorOldRadius * 15 / 12.5) + " ";
+                    points += "a " + opt.inductorOldRadius + " " + opt.inductorOldRadius + " ";
+                    points += "0 1 0 -" + (opt.inductorOldRadius * 10 / 12.5) + " " + (opt.inductorOldRadius * 20 / 12.5) + " ";
+                    svg.addPath(canvas, points, opt.fill, opt.stroke);
+                }
+
                 svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
                 svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
-                drawCoil1(0);
-                drawCoil1(1);
-                drawCoil1(2);
-                drawCoil1(3);
+                if(opt.inductorOld) {
+                    drawCoilOld();
+                } else {
+                    drawCoil1(0);
+                    drawCoil1(1);
+                    drawCoil1(2);
+                    drawCoil1(3);
+                }
                 if(point1.name) {
                     svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
                     if(textSplit[1]) {
