@@ -954,6 +954,21 @@ function akiha(input) {
                                 }), me.afterLabel);
                             }
 
+                        } else if(/[\/\\]/.test(quadro.getChar())) {
+                            nodeDirection = quadro.getChar();
+                            quadro.elementDefined = true;
+                            if(quadro.isElementExist()) {
+                                quadro.loopAddSerial();
+                            }
+                            return (function(direction) {
+                                        return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, name, text, val) {
+                                            loop.name = name;
+                                            loop.text = text;
+                                            loop.sw = val;
+                                            loop.direction = direction;
+                                        }), me.afterLabel);
+                                   })(nodeDirection);
+
                         } else if((quadro.isDirectionVertical() && quadro.getChar() === "|") ||
                                 (quadro.isDirectionHorizontal() && quadro.getChar() === "-")) {
                             quadro.elementDefined = false;

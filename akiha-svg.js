@@ -32,6 +32,11 @@ var defaultOption = {
     currentArrowLong: 12,
     currentArrowShort: 4,
     currentFill: "none",
+    switchLong: 20,
+    switchShort: 11,
+    switchRadius: 1.5,
+    switchTextMarginX: 4,
+    switchFill: "none",
     jointRadius: 2,
     fontFamily: "sans-serif",
     fontSize: 14,
@@ -665,6 +670,52 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                             p3 + (p4 - p3) / 2,
                             opt, fontSubscriptSize());
                     }
+                }
+            }
+        ),
+
+        drawSwitch: makeDrawing(
+            opt.switchLong,
+            function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var points = "",
+                    textSplit = point1.text.split("_");
+
+                svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
+                svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
+                if(point1.direction === "/") {
+                    svg.addLine(canvas, pl1, pay, pl2, pay - opt.switchShort, opt.stroke);
+                } else {
+                    svg.addLine(canvas, pl2, pay, pl1, pay - opt.switchShort, opt.stroke);
+                }
+                svg.addCircle(canvas, pl1, pay, opt.switchRadius, opt.stroke, opt.switchFill);
+                svg.addCircle(canvas, pl2, pay, opt.switchRadius, opt.stroke, opt.switchFill);
+                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin - opt.switchTextMarginX, opt);
+                if(textSplit[1]) {
+                    svg.addText(canvas,
+                        textSplit[1],
+                        pl1 + getTextWidth(textSplit[0], opt.fontSize),
+                        pay - opt.textMargin - opt.switchTextMarginX,
+                        opt, fontSubscriptSize());
+                }
+            }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var points = "",
+                    textSplit = point1.text.split("_");
+
+                svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
+                svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
+                if(point1.direction === "/") {
+                    svg.addLine(canvas, pax, pl2, pax + opt.switchShort, pl1, opt.stroke);
+                } else {
+                    svg.addLine(canvas, pax, pl1, pax + opt.switchShort, pl2, opt.stroke);
+                }
+                svg.addCircle(canvas, pax, pl1, opt.switchRadius, opt.stroke, opt.switchFill);
+                svg.addCircle(canvas, pax, pl2, opt.switchRadius, opt.stroke, opt.switchFill);
+                svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
+                if(textSplit[1]) {
+                    svg.addText(canvas,
+                        textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
+                        p3 + (p4 - p3) / 2,
+                        opt, fontSubscriptSize());
                 }
             }
         ),
