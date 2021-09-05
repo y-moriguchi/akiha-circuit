@@ -149,6 +149,8 @@ function draw(loops, drawer) {
                             drawer.drawCurrent(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else if(drawSerial[k].sw !== undef) {
                             drawer.drawSwitch(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
+                        } else if(drawSerial[k].ellipsis !== undef) {
+                            drawer.drawEllipsis(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else if(!drawSerial[k].noWire) {
                             drawer.drawLine(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         }

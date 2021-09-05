@@ -246,7 +246,9 @@ function quadro(inputString) {
                    el.capacitance !== undef ||
                    el.inductance !== undef ||
                    el.voltageAC !== undef ||
-                   el.current !== undef;
+                   el.current !== undef ||
+                   el.sw !== undef ||
+                   el.ellipsis !== undef;
         }
     };
     return me;
@@ -843,6 +845,16 @@ function akiha(input) {
                         if(quadro.getChar() === ":") {
                             quadro.getLoop().noWire = true;
 
+                        } else if(quadro.getChar() === ".") {
+                            quadro.elementDefined = true;
+                            if(quadro.isElementExist()) {
+                                quadro.loopAddSerial();
+                            }
+                            quadro.getLoop().ellipsis = true;
+                            do {
+                                quadro.moveForward();
+                            } while(quadro.getChar() === ".");
+
                         } else if((/[<>]/.test(quadro.getChar()) && quadro.isDirectionHorizontal()) || (/[v^]/.test(quadro.getChar()) && quadro.isDirectionVertical())) {
                             nodeDirection = quadro.getChar();
                             if(isSurroundParenthesis()) {
@@ -1021,7 +1033,7 @@ function akiha(input) {
                     scan: function(quadro) {
                         if((!quadro.isWhitespace() && quadro.get().gridX) || quadro.getChar() === BOUND) {
                             throw new Error("No label");
-                        } else if(labelChars.test(quadro.getChar())) {
+                        } else if(labelChars.test(quadro.getChar()) && !quadro.get().gridX && !quadro.get().gridY) {
                             return me.findLabel;
                         } else {
                             quadro.move(LEFT);
@@ -1030,7 +1042,7 @@ function akiha(input) {
                     },
 
                     findLabel: function(quadro) {
-                        if(quadro.getChar() === BOUND || !labelChars.test(quadro.getChar())) {
+                        if(quadro.getChar() === BOUND || !(labelChars.test(quadro.getChar()) && !quadro.get().gridX && !quadro.get().gridY)) {
                             quadro.move(RIGHT).move(UP);
                             quadro.text = "";
                             quadro.name = "";
@@ -1042,7 +1054,7 @@ function akiha(input) {
                     },
 
                     findLabelUp: function(quadro) {
-                        if(quadro.getChar() === BOUND || !labelChars.test(quadro.getChar())) {
+                        if(quadro.getChar() === BOUND || !(labelChars.test(quadro.getChar()) && !quadro.get().gridX && !quadro.get().gridY)) {
                             quadro.move(DOWN);
                             return me.readLabel;
                         } else {
@@ -1051,7 +1063,7 @@ function akiha(input) {
                     },
 
                     readName: function(quadro) {
-                        if(quadro.getChar() !== BOUND && labelChars.test(quadro.getChar())) {
+                        if(quadro.getChar() !== BOUND && labelChars.test(quadro.getChar()) && !quadro.get().gridX && !quadro.get().gridY) {
                             quadro.name += quadro.getChar();
                             quadro.move(RIGHT);
                             return me.readName;
@@ -1062,7 +1074,7 @@ function akiha(input) {
                     },
 
                     readNameReturn: function(quadro) {
-                        if(quadro.getChar() !== BOUND && labelChars.test(quadro.getChar())) {
+                        if(quadro.getChar() !== BOUND && labelChars.test(quadro.getChar()) && !quadro.get().gridX && !quadro.get().gridY) {
                             quadro.move(LEFT);
                             return me.readNameReturn;
                         } else {
@@ -1075,7 +1087,7 @@ function akiha(input) {
                         var text,
                             val;
 
-                        if(labelChars.test(quadro.getChar())) {
+                        if(labelChars.test(quadro.getChar()) && !quadro.get().gridX && !quadro.get().gridY) {
                             quadro.text += quadro.getChar();
                             quadro.move(RIGHT);
                             return me.readLabel;
@@ -1100,13 +1112,13 @@ function akiha(input) {
                     init: function(quadro) {
                         if((!quadro.isWhitespace() && quadro.get().gridY) || quadro.getChar() === BOUND) {
                             return returnMachine;
-                        } else if(labelChars.test(quadro.getChar())) {
+                        } else if(labelChars.test(quadro.getChar()) && !quadro.get().gridX && !quadro.get().gridY) {
                             quadro.text = "";
                             quadro.name = "";
-                            if(quadro.getChar(0, -1) !== BOUND && labelChars.test(quadro.getChar(0, -1))) {
+                            if(quadro.getChar(0, -1) !== BOUND && labelChars.test(quadro.getChar(0, -1)) && !quadro.get(0, -1).gridX && !quadro.get(0, -1).gridY) {
                                 quadro.move(UP);
                                 return new CallMachine(machineReadLabelUpDownProp("name"), me.moveDown);
-                            } else if(quadro.getChar(0, 1) !== BOUND && labelChars.test(quadro.getChar(0, 1))) {
+                            } else if(quadro.getChar(0, 1) !== BOUND && labelChars.test(quadro.getChar(0, 1)) && !quadro.get(0, 1).gridX && !quadro.get(0, 1).gridY) {
                                 return new CallMachine(machineReadLabelUpDownProp("name"), me.moveDown);
                             }
                             return machineReadLabelUpDown.init;
@@ -1134,7 +1146,7 @@ function akiha(input) {
                         var text,
                             val;
 
-                        if(labelChars.test(quadro.getChar()) && quadro.getChar() !== BOUND) {
+                        if(labelChars.test(quadro.getChar()) && !quadro.get().gridX && !quadro.get().gridY && quadro.getChar() !== BOUND) {
                             quadro[prop] += quadro.getChar();
                             quadro.move(RIGHT);
                             return me.init;

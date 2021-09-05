@@ -40,6 +40,8 @@ var defaultOption = {
     switchTextMarginX: 4,
     switchFill: "none",
     jointRadius: 2,
+    ellipsisRadius: 1,
+    ellipsisLength: 30,
     fontFamily: "sans-serif",
     fontSize: 14,
     fontSubscriptSizeRatio: 8 / 14,
@@ -755,6 +757,23 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                         p3 + (p4 - p3) / 2,
                         opt, fontSubscriptSize());
                 }
+            }
+        ),
+
+        drawEllipsis: makeDrawing(
+            opt.ellipsisLength,
+            function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
+                svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
+                svg.addCircle(canvas, pl1 + opt.ellipsisLength / 4, pay, opt.ellipsisRadius, opt.stroke, opt.stroke);
+                svg.addCircle(canvas, pl1 + opt.ellipsisLength * 2/ 4, pay, opt.ellipsisRadius, opt.stroke, opt.stroke);
+                svg.addCircle(canvas, pl1 + opt.ellipsisLength * 3 / 4, pay, opt.ellipsisRadius, opt.stroke, opt.stroke);
+            }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
+                svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
+                svg.addCircle(canvas, pax, pl1 + opt.ellipsisLength / 4, opt.ellipsisRadius, opt.stroke, opt.stroke);
+                svg.addCircle(canvas, pax, pl1 + opt.ellipsisLength * 2/ 4, opt.ellipsisRadius, opt.stroke, opt.stroke);
+                svg.addCircle(canvas, pax, pl1 + opt.ellipsisLength * 3 / 4, opt.ellipsisRadius, opt.stroke, opt.stroke);
             }
         ),
 
