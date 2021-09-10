@@ -1793,7 +1793,9 @@ var defaultOption = {
     terminalRadius: 3,
     terminalFill: "white",
     terminalLabelMargin: 14,
-    terminalLabelMarginY: 3
+    terminalLabelMarginY: 3,
+    dotMargin: 1 / 14,
+    dotRadius: 1
 };
 
 var widths = [];
@@ -1912,6 +1914,39 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
             result += baseWidth * widths[text.charCodeAt(i)];
         }
         return result;
+    }
+
+    function drawTextWithDot(canvas, text, x, y) {
+        var split0size,
+            split0;
+
+        if(/^\.[A-Z]/.test(text)) {
+            split0 = text.substring(1, text.length);
+            split0size = getTextWidth(split0, opt.fontSize);
+            svg.addCircle(canvas, x + split0size / 2, y - (opt.dotMargin * opt.fontSize) - opt.fontSize, opt.dotRadius, opt.stroke);
+        } else {
+            split0 = text;
+        }
+        svg.addText(canvas, split0, x, y, opt);
+        return split0;
+    }
+
+    function drawTextX(canvas, textSplit, x, y) {
+        var split0;
+
+        split0 = drawTextWithDot(canvas, textSplit[0], x, y);
+        if(textSplit[1]) {
+            svg.addText(canvas, textSplit[1], x + getTextWidth(split0, opt.fontSize), y, opt, fontSubscriptSize());
+        }
+    }
+
+    function drawTextY(canvas, textSplit, x, y) {
+        var split0;
+
+        split0 = drawTextWithDot(canvas, textSplit[0], x, y);
+        if(textSplit[1]) {
+            svg.addText(canvas, textSplit[1], x + getTextWidth(split0, opt.fontSize), y, opt, fontSubscriptSize());
+        }
     }
 
     function getPoint(point) {
@@ -2077,10 +2112,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
                 svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
-                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
-                if(textSplit[1]) {
-                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, fontSubscriptSize());
-                }
+                drawTextX(canvas, textSplit, pl1, pay - opt.textMargin, opt);
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
@@ -2108,22 +2140,10 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
                 svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
                 if(point1.name) {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
                 }
             }
         ),
@@ -2142,10 +2162,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                     svg.addLine(canvas, pl2, pay - opt.batteryLong / 2, pl2, pay + opt.batteryLong / 2, opt.stroke);
                     svg.addLine(canvas, pl1, pay - opt.batteryShort / 2, pl1, pay + opt.batteryShort / 2, opt.stroke);
                 }
-                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
-                if(textSplit[1]) {
-                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, fontSubscriptSize());
-                }
+                drawTextX(canvas, textSplit, pl1, pay - opt.textMargin, opt);
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
@@ -2162,22 +2179,10 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                     svg.addLine(canvas, pax - opt.batteryShort / 2, pl1, pax + opt.batteryShort / 2, pl1, opt.stroke);
                 }
                 if(point1.name) {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
                 }
             }
         ),
@@ -2191,10 +2196,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
                 svg.addLine(canvas, pl1, pay - opt.capacitorLength / 2, pl1, pay + opt.capacitorLength / 2, opt.stroke);
                 svg.addLine(canvas, pl2, pay - opt.capacitorLength / 2, pl2, pay + opt.capacitorLength / 2, opt.stroke);
-                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
-                if(textSplit[1]) {
-                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, fontSubscriptSize());
-                }
+                drawTextX(canvas, textSplit, pl1, pay - opt.textMargin, opt);
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
@@ -2206,22 +2208,10 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addLine(canvas, pax - opt.capacitorLength / 2, pl1, pax + opt.capacitorLength / 2, pl1, opt.stroke);
                 svg.addLine(canvas, pax - opt.capacitorLength / 2, pl2, pax + opt.capacitorLength / 2, pl2, opt.stroke);
                 if(point1.name) {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
                 }
             }
         ),
@@ -2263,10 +2253,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                     drawCoil1(2);
                     drawCoil1(3);
                 }
-                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
-                if(textSplit[1]) {
-                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, fontSubscriptSize());
-                }
+                drawTextX(canvas, textSplit, pl1, pay - opt.textMargin, opt);
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
@@ -2306,22 +2293,10 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                     drawCoil1(3);
                 }
                 if(point1.name) {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
                 }
             }
         ),
@@ -2341,10 +2316,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 points += "q " + (opt.voltageACx / 2) + " " + (opt.voltageACy / 2) + " " + (opt.voltageACx) + " 0";
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addCircle(canvas, (p4 + p3) / 2, pay, opt.voltageACRadius, opt.stroke, opt.voltageACFill);
-                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
-                if(textSplit[1]) {
-                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, fontSubscriptSize());
-                }
+                drawTextX(canvas, textSplit, pl1, pay - opt.textMargin, opt);
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
@@ -2362,22 +2334,10 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addCircle(canvas, pax, (p4 + p3) / 2, opt.voltageACRadius, opt.stroke, opt.voltageACFill);
                 if(point1.name) {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
                 }
             }
         ),
@@ -2405,10 +2365,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 }
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addCircle(canvas, (p4 + p3) / 2, pay, opt.currentRadius, opt.stroke, opt.currentFill);
-                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin, opt);
-                if(textSplit[1]) {
-                    svg.addText(canvas, textSplit[1], pl1 + getTextWidth(textSplit[0], opt.fontSize), pay - opt.textMargin, opt, fontSubscriptSize());
-                }
+                drawTextX(canvas, textSplit, pl1, pay - opt.textMargin, opt);
                 if(point1.name) {
                     svg.addText(canvas, point1.name, pl1, pay - opt.textMargin * 2, opt);
                 }
@@ -2434,22 +2391,10 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addPath(canvas, points, opt.fill, opt.stroke);
                 svg.addCircle(canvas, pax, (p4 + p3) / 2, opt.currentRadius, opt.stroke, opt.currentFill);
                 if(point1.name) {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2 + opt.textMargin / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2 + opt.textMargin / 2, opt);
                     svg.addText(canvas, point1.name, pax + opt.textMargin, p3 + (p4 - p3) / 2 - opt.textMargin / 2, opt);
                 } else {
-                    svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
-                    if(textSplit[1]) {
-                        svg.addText(canvas,
-                            textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                            p3 + (p4 - p3) / 2,
-                            opt, fontSubscriptSize());
-                    }
+                    drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
                 }
             }
         ),
@@ -2469,14 +2414,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 }
                 svg.addCircle(canvas, pl1, pay, opt.switchRadius, opt.stroke, opt.switchFill);
                 svg.addCircle(canvas, pl2, pay, opt.switchRadius, opt.stroke, opt.switchFill);
-                svg.addText(canvas, textSplit[0], pl1, pay - opt.textMargin - opt.switchTextMarginX, opt);
-                if(textSplit[1]) {
-                    svg.addText(canvas,
-                        textSplit[1],
-                        pl1 + getTextWidth(textSplit[0], opt.fontSize),
-                        pay - opt.textMargin - opt.switchTextMarginX,
-                        opt, fontSubscriptSize());
-                }
+                drawTextX(canvas, textSplit, pl1, pay - opt.textMargin - opt.switchTextMarginX, opt);
             }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
                 var points = "",
                     textSplit = point1.text.split("_");
@@ -2490,13 +2428,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 }
                 svg.addCircle(canvas, pax, pl1, opt.switchRadius, opt.stroke, opt.switchFill);
                 svg.addCircle(canvas, pax, pl2, opt.switchRadius, opt.stroke, opt.switchFill);
-                svg.addText(canvas, textSplit[0], pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
-                if(textSplit[1]) {
-                    svg.addText(canvas,
-                        textSplit[1], pax + opt.textMargin + getTextWidth(textSplit[0], opt.fontSize),
-                        p3 + (p4 - p3) / 2,
-                        opt, fontSubscriptSize());
-                }
+                drawTextY(canvas, textSplit, pax + opt.textMargin, p3 + (p4 - p3) / 2, opt);
             }
         ),
 
