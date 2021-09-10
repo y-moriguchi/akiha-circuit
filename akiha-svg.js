@@ -53,7 +53,8 @@ var defaultOption = {
     arrowFill: "black",
     terminalRadius: 3,
     terminalFill: "white",
-    terminalLabelMargin: 14
+    terminalLabelMargin: 14,
+    terminalLabelMarginY: 3
 };
 
 var widths = [];
@@ -305,10 +306,10 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
 
             svg.addCircle(canvas, p.x, p.y, opt.terminalRadius, opt.stroke, opt.terminalFill);
             if(point.terminalLabelLeft) {
-                svg.addText(canvas, point.terminalLabelLeft, p.x - opt.terminalLabelMargin, p.y, opt);
+                svg.addText(canvas, point.terminalLabelLeft, p.x - opt.terminalLabelMargin, p.y - opt.terminalLabelMarginY, opt);
             }
             if(point.terminalLabelRight) {
-                svg.addText(canvas, point.terminalLabelRight, p.x + opt.terminalRadius * 2, p.y, opt);
+                svg.addText(canvas, point.terminalLabelRight, p.x + opt.terminalRadius * 2, p.y - opt.terminalLabelMarginY, opt);
             }
         },
 

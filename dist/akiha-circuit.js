@@ -258,7 +258,6 @@ function draw(loops, drawer) {
             j,
             nowLength,
             nowPoint,
-            drawTerminal,
             sideLengthX = createSideLength("x"),
             sideLengthY = createSideLength("y");
 
@@ -321,12 +320,9 @@ function draw(loops, drawer) {
             drawSerial.push(loops[i][j]);
             if(!isSamePosition(loops[i][j], loops[i][j + 1])) {
                 if(!isSideDrawn(loops[i][j], loops[i][j + 1])) {
-                    drawTerminal = false;
                     if(!isPointDrawn(loops[i][j])) {
                         drawnPoints.push(loops[i][j]);
-                        if(loops[i][j].terminal) {
-                            drawTerminal = true;
-                        } else if(!loops[i][j].noNode && loops[i][j].neighbor > 2) {
+                        if(!loops[i][j].terminal && !loops[i][j].noNode && loops[i][j].neighbor > 2) {
                             drawer.drawJoint(loops[i][j]);
                         }
                     }
@@ -353,9 +349,25 @@ function draw(loops, drawer) {
                             drawer.drawLine(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         }
                     }
+                }
+                drawSerial = [];
+            }
+        }
+    }
 
-                    if(drawTerminal) {
-                        drawer.drawTerminal(loops[i][j]);
+    drawn = [];
+    drawnPoints = [];
+    for(i = 0; i < loops.length; i++) {
+        drawSerial = [];
+        for(j = 0; j < loops[i].length - 1; j++) {
+            drawSerial.push(loops[i][j]);
+            if(!isSamePosition(loops[i][j], loops[i][j + 1])) {
+                if(!isSideDrawn(loops[i][j], loops[i][j + 1])) {
+                    if(!isPointDrawn(loops[i][j])) {
+                        drawnPoints.push(loops[i][j]);
+                        if(loops[i][j].terminal) {
+                            drawer.drawTerminal(loops[i][j]);
+                        }
                     }
                 }
                 drawSerial = [];
@@ -1780,7 +1792,8 @@ var defaultOption = {
     arrowFill: "black",
     terminalRadius: 3,
     terminalFill: "white",
-    terminalLabelMargin: 14
+    terminalLabelMargin: 14,
+    terminalLabelMarginY: 3
 };
 
 var widths = [];
@@ -2032,10 +2045,10 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
 
             svg.addCircle(canvas, p.x, p.y, opt.terminalRadius, opt.stroke, opt.terminalFill);
             if(point.terminalLabelLeft) {
-                svg.addText(canvas, point.terminalLabelLeft, p.x - opt.terminalLabelMargin, p.y, opt);
+                svg.addText(canvas, point.terminalLabelLeft, p.x - opt.terminalLabelMargin, p.y - opt.terminalLabelMarginY, opt);
             }
             if(point.terminalLabelRight) {
-                svg.addText(canvas, point.terminalLabelRight, p.x + opt.terminalRadius * 2, p.y, opt);
+                svg.addText(canvas, point.terminalLabelRight, p.x + opt.terminalRadius * 2, p.y - opt.terminalLabelMarginY, opt);
             }
         },
 
