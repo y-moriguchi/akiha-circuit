@@ -248,7 +248,9 @@ function quadro(inputString) {
                    el.voltageAC !== undef ||
                    el.current !== undef ||
                    el.sw !== undef ||
-                   el.ellipsis !== undef;
+                   el.ellipsis !== undef ||
+                   el.load !== undef ||
+                   el.meter !== undef;
         }
     };
     return me;
@@ -963,6 +965,22 @@ function akiha(input) {
                                     loop.name = name;
                                     loop.text = text;
                                     loop.voltage = -val;
+                                }), me.afterLabel);
+                            }
+
+                        } else if(quadro.getChar() === "=") {
+                            quadro.elementDefined = true;
+                            if(quadro.getChar(-1, 0) === "[") {
+                                return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, name, text, val) {
+                                    loop.name = name;
+                                    loop.text = text;
+                                    loop.load = val;
+                                }), me.afterLabel);
+                            } else if(quadro.getChar(-1, 0) === "(") {
+                                return new CallMachine(makeMachineScanLabel(quadro.getDirection(), function(loop, name, text, val) {
+                                    loop.name = name;
+                                    loop.text = text;
+                                    loop.meter = val;
                                 }), me.afterLabel);
                             }
 

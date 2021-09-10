@@ -147,6 +147,10 @@ function draw(loops, drawer) {
                             drawer.drawSwitch(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else if(drawSerial[k].ellipsis !== undef) {
                             drawer.drawEllipsis(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
+                        } else if(drawSerial[k].load !== undef) {
+                            drawer.drawLoad(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
+                        } else if(drawSerial[k].meter !== undef) {
+                            drawer.drawMeter(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         } else if(!drawSerial[k].noWire) {
                             drawer.drawLine(drawSerial[k], loops[i][j + 1], k, drawSerial.length);
                         }

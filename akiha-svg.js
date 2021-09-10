@@ -39,11 +39,15 @@ var defaultOption = {
     switchRadius: 1.5,
     switchTextMarginX: 4,
     switchFill: "none",
+    loadLong: 34,
+    loadShort: 24,
+    meterRadius: 10,
+    meterFill: "none",
     jointRadius: 2,
     ellipsisRadius: 1,
     ellipsisLength: 30,
     fontFamily: "sans-serif",
-    fontSize: 14,
+    fontSize: 12,
     fontSubscriptSizeRatio: 8 / 14,
     fontSubscriptMargin: 1,
     textMargin: 14,
@@ -663,8 +667,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         drawSwitch: makeDrawing(
             opt.switchLong,
             function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
-                var points = "",
-                    textSplit = point1.text.split("_");
+                var textSplit = point1.text.split("_");
 
                 svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
                 svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
@@ -677,8 +680,7 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addCircle(canvas, pl2, pay, opt.switchRadius, opt.stroke, opt.switchFill);
                 drawTextX(canvas, textSplit, pl1, pay - opt.textMargin - opt.switchTextMarginX, opt);
             }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
-                var points = "",
-                    textSplit = point1.text.split("_");
+                var textSplit = point1.text.split("_");
 
                 svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
                 svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
@@ -707,6 +709,84 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 svg.addCircle(canvas, pax, pl1 + opt.ellipsisLength / 4, opt.ellipsisRadius, opt.stroke, opt.stroke);
                 svg.addCircle(canvas, pax, pl1 + opt.ellipsisLength * 2/ 4, opt.ellipsisRadius, opt.stroke, opt.stroke);
                 svg.addCircle(canvas, pax, pl1 + opt.ellipsisLength * 3 / 4, opt.ellipsisRadius, opt.stroke, opt.stroke);
+            }
+        ),
+
+        drawLoad: makeDrawing(
+            opt.loadLong,
+            function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var points = "",
+                    textSplit = point1.text.split("_"),
+                    split0 = textSplit[0],
+                    textLength;
+
+                svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
+                svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
+                points += "M " + pl1 + " " + (pay - opt.loadShort / 2) + " ";
+                points += "l " + (pl2 - pl1) + " 0 ";
+                points += "l 0 " + opt.loadShort + " ";
+                points += "l " + (pl1 - pl2) + " 0 ";
+                points += "l 0 " + (-opt.loadShort) + " ";
+                svg.addPath(canvas, points, opt.fill, opt.stroke);
+                if(/^\.[A-Z]/.test(split0)) {
+                    split0 = split0.substring(1, split0.length);
+                }
+                textLength = getTextWidth(split0, opt.fontSize);
+                textLength += getTextWidth(textSplit[1], fontSubscriptSize());
+                drawTextX(canvas, textSplit, p3 + (p4 - p3) / 2 - textLength / 2, pay + opt.fontSize / 2, opt);
+            }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var points = "",
+                    textSplit = point1.text.split("_"),
+                    split0 = textSplit[0],
+                    textLength;
+
+                svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
+                svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
+                points += "M " + (pax - opt.loadShort / 2) + " " + pl1 + " ";
+                points += "l 0 " + (pl2 - pl1) + " ";
+                points += "l " + opt.loadShort + " 0 ";
+                points += "l 0 " + (pl1 - pl2) + " ";
+                points += "l " + (-opt.loadShort) + " 0 ";
+                svg.addPath(canvas, points, opt.fill, opt.stroke);
+                if(/^\.[A-Z]/.test(split0)) {
+                    split0 = split0.substring(1, split0.length);
+                }
+                textLength = getTextWidth(split0, opt.fontSize);
+                textLength += getTextWidth(textSplit[1], fontSubscriptSize());
+                drawTextY(canvas, textSplit, pax - textLength / 2, p3 + (p4 - p3) / 2 + opt.fontSize / 2, opt);
+            }
+        ),
+
+        drawMeter: makeDrawing(
+            opt.meterRadius * 2,
+            function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var textSplit = point1.text.split("_"),
+                    split0 = textSplit[0],
+                    textLength;
+
+                svg.addLine(canvas, p3, pay, pl1, pay, opt.stroke);
+                svg.addLine(canvas, pl2, pay, p4, pay, opt.stroke);
+                svg.addCircle(canvas, (p4 + p3) / 2, pay, opt.meterRadius, opt.stroke, opt.meterFill);
+                if(/^\.[A-Z]/.test(split0)) {
+                    split0 = split0.substring(1, split0.length);
+                }
+                textLength = getTextWidth(split0, opt.fontSize);
+                textLength += getTextWidth(textSplit[1], fontSubscriptSize());
+                drawTextX(canvas, textSplit, p3 + (p4 - p3) / 2 - textLength / 2, pay + opt.fontSize / 2, opt);
+            }, function(point1, point2, pax, pay, pbx, pby, p1x, p1y, p2x, p2y, pl1, pl2, p3, p4) {
+                var textSplit = point1.text.split("_"),
+                    split0 = textSplit[0],
+                    textLength;
+
+                svg.addLine(canvas, pax, p3, pax, pl1, opt.stroke);
+                svg.addLine(canvas, pax, pl2, pax, p4, opt.stroke);
+                svg.addCircle(canvas, pax, (p4 + p3) / 2, opt.meterRadius, opt.stroke, opt.meterFill);
+                if(/^\.[A-Z]/.test(split0)) {
+                    split0 = split0.substring(1, split0.length);
+                }
+                textLength = getTextWidth(split0, opt.fontSize);
+                textLength += getTextWidth(textSplit[1], fontSubscriptSize());
+                drawTextY(canvas, textSplit, pax - textLength / 2, p3 + (p4 - p3) / 2 + opt.fontSize / 2, opt);
             }
         ),
 
