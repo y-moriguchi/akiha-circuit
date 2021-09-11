@@ -19,10 +19,6 @@ function log(message) {
     //console.log(message);
 }
 
-function isNode(ch) {
-    return ch !== BOUND && /[\*\+ox]/.test(ch);
-}
-
 function quadro(inputString) {
     var TURN = [UP, RIGHT, DOWN, LEFT],
         input = inputString.split(/\r\n|\r|\n/),
@@ -146,6 +142,16 @@ function quadro(inputString) {
             return me.getDirection() === UP || me.getDirection() === DOWN;
         },
 
+        isNode: function() {
+            var ch = me.getChar();
+
+            if(ch === "o") {
+                return true;
+            } else {
+                return ch !== BOUND && /[\*\+]/.test(ch);
+            }
+        },
+
         turnRight: function() {
             direction++;
             if(direction >= 4) {
@@ -196,7 +202,7 @@ function quadro(inputString) {
             neighbor += me.isWhitespace(0, -1) ? 0 : 1;
             if(nodeType === "o") {
                 terminal = true;
-            } else if(nodeType === "x") {
+            } else if(nodeType === "+") {
                 noNode = true;
             }
             terminalLabelLeft = me.isWhitespace(-1, -1) ? terminalLabelLeft : me.getChar(-1, -1);
@@ -250,7 +256,8 @@ function quadro(inputString) {
                    el.sw !== undef ||
                    el.ellipsis !== undef ||
                    el.load !== undef ||
-                   el.meter !== undef;
+                   el.meter !== undef ||
+                   el.dummyElement;
         }
     };
     return me;
@@ -319,7 +326,7 @@ function akiha(input) {
             name: "findBorder",
 
             init: function(quadro) {
-                if(isNode(quadro.getChar())) {
+                if(quadro.isNode()) {
                     return new CallMachine(machineScanBorder, me.halt);
                 } else if(quadro.getChar() === BOUND) {
                     quadro.moveCrLf();
@@ -414,7 +421,7 @@ function akiha(input) {
             move: function(quadro) {
                 if(quadro.get().borderAuxStart) {
                     return machineBorder.init;
-                } else if(isNode(quadro.getChar())) {
+                } else if(quadro.isNode()) {
                     return new CallMachine(machineDrawBorderAux, me.turn);
                 } else if(quadro.getChar() !== BOUND) {
                     quadro.moveForward();
@@ -541,7 +548,7 @@ function akiha(input) {
             name: "gridDown1",
 
             init: function (quadro) {
-                if(isNode(quadro.getChar())) {
+                if(quadro.isNode()) {
                     return new CallMachine(machineGridRight, me.next);
                 } else if(!quadro.get().borderY) {
                     return returnMachine;
@@ -565,7 +572,7 @@ function akiha(input) {
 
             init: function(quadro) {
                 quadro.get().gridX = true;
-                if(isNode(quadro.getChar())) {
+                if(quadro.isNode()) {
                     return new CallMachine(machineGridVertical, me.initNext);
                 } else {
                     quadro.move(RIGHT);
@@ -580,7 +587,7 @@ function akiha(input) {
 
             move: function(quadro) {
                 quadro.get().gridX = true;
-                if(isNode(quadro.getChar())) {
+                if(quadro.isNode()) {
                     return new CallMachine(machineGridVertical, me.next);
                 } else if(quadro.get().borderY) {
                     return returnMachine;
@@ -627,7 +634,7 @@ function akiha(input) {
 
             init: function(quadro) {
                 quadro.get().gridY = true;
-                if(isNode(quadro.getChar())) {
+                if(quadro.isNode()) {
                     return new CallMachine(machineGridHorizontal, me.next);
                 } else if(quadro.get().borderX) {
                     return returnMachine;
@@ -729,7 +736,7 @@ function akiha(input) {
                     if(cell.cellScanned === RIGHT) {
                         quadro.move(RIGHT);
                         return me.move;
-                    } else if(isNode(quadro.getChar()) || !quadro.isWhitespace(1, 0)) {
+                    } else if(quadro.isNode() || !quadro.isWhitespace(1, 0)) {
                         quadro.direction(RIGHT);
                         return new CallMachine(machineScanCellClockwise, me.next);
                     } else {
@@ -743,7 +750,7 @@ function akiha(input) {
 
                     if(cell.cellScanned === RIGHT) {
                         return me.next;
-                    } else if(isNode(quadro.getChar()) && !quadro.isWhitespace(1, 0)) {
+                    } else if(quadro.isNode() && !quadro.isWhitespace(1, 0)) {
                         quadro.direction(RIGHT);
                         return new CallMachine(machineScanCellClockwise, me.next);
                     } else {
@@ -783,7 +790,7 @@ function akiha(input) {
                 },
 
                 move: function(quadro) {
-                    if(isNode(quadro.getChar())) {
+                    if(quadro.isNode()) {
                         quadro.loopAdd(quadro.getChar());
                         quadro.get().cellScanned = quadro.getDirection();
                         quadro.moveForward();
@@ -815,7 +822,7 @@ function akiha(input) {
                         return result;
                     }
 
-                    if(isNode(quadro.getChar())) {
+                    if(quadro.isNode()) {
                         nodeType = quadro.getChar();
                         if(quadro.get().clockwiseBegin) {
                             quadro.get().clockwiseBegin = false;
@@ -998,6 +1005,13 @@ function akiha(input) {
                                             loop.direction = direction;
                                         }), me.afterLabel);
                                    })(nodeDirection);
+
+                        } else if(quadro.getChar() === "\"") {
+                            quadro.elementDefined = true;
+                            if(quadro.isElementExist()) {
+                                quadro.loopAddSerial();
+                            }
+                            quadro.getLoop().dummyElement = true;
 
                         } else if((quadro.isDirectionVertical() && quadro.getChar() === "|") ||
                                 (quadro.isDirectionHorizontal() && quadro.getChar() === "-")) {
