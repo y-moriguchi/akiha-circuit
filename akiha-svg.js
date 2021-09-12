@@ -60,7 +60,8 @@ var defaultOption = {
     terminalLabelMargin: 14,
     terminalLabelMarginY: 3,
     dotMargin: 1 / 14,
-    dotRadius: 1
+    dotRadius: 1,
+    directionMarginX: 6
 };
 
 var widths = [];
@@ -309,12 +310,12 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
                 }
                 if(point1.preCurrent) {
                     preCurrentPoint = p3 + (pl1 - p3) / 2;
-                    svg.addText(canvas, point1.preCurrent.text, pax - opt.textMargin, preCurrentPoint, opt);
+                    svg.addText(canvas, point1.preCurrent.text, pax + opt.directionMarginX, preCurrentPoint, opt);
                     makeArrowVertical(pax, preCurrentPoint, point1.preCurrent.direction === "v" ? 1 : -1);
                 }
                 if(point1.postCurrent) {
                     postCurrentPoint = p4 - (p4 - pl2) / 2;
-                    svg.addText(canvas, point1.postCurrent.text, pax - opt.textMargin, postCurrentPoint, opt);
+                    svg.addText(canvas, point1.postCurrent.text, pax + opt.directionMarginX, postCurrentPoint, opt);
                     makeArrowVertical(pax, postCurrentPoint, point1.postCurrent.direction === "v" ? 1 : -1);
                 }
             }
@@ -333,7 +334,33 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         },
 
         drawLine: function(point1, point2) {
-            svg.addLine(canvas, getPoint(point1).x, getPoint(point1).y, getPoint(point2).x, getPoint(point2).y, opt.stroke);
+            var px1,
+                px2,
+                py1,
+                py2;
+
+            px1 = getPoint(point1).x;
+            px2 = getPoint(point2).x;
+            py1 = getPoint(point1).y;
+            py2 = getPoint(point2).y;
+            svg.addLine(canvas, px1, py1, px2, py2, opt.stroke);
+            if(point1.preCurrent) {
+                if(py1 === py2) {
+                    drawTextX(canvas, point1.preCurrent.text.split("_"), px1 + (px2 - px1) / 2, py1 - opt.arrowSize - 2, opt);
+                    makeArrowHorizontal(px1 + (px2 - px1) / 2, py1, point1.preCurrent.direction === ">" ? 1 : -1);
+                } else {
+                    drawTextY(canvas, point1.preCurrent.text.split("_"), px1 + opt.directionMarginX, py1 + (py2 - py1) / 2, opt);
+                    makeArrowVertical(px1, py1 + (py2 - py1) / 2, point1.preCurrent.direction === "v" ? 1 : -1);
+                }
+            } else if(point1.postCurrent) {
+                if(py1 === py2) {
+                    drawTextX(canvas, point1.postCurrent.text.split("_"), px1 + (px2 - px1) / 2, py1 - opt.arrowSize - 2, opt);
+                    makeArrowHorizontal(px1 + (px2 - px1) / 2, py1, point1.postCurrent.direction === ">" ? 1 : -1);
+                } else {
+                    drawTextY(canvas, point1.postCurrent.text.split("_"), px1 + opt.directionMarginX, py1 + (py2 - py1) / 2, opt);
+                    makeArrowVertical(px1, py1 + (py2 - py1) / 2, point1.postCurrent.direction === "v" ? 1 : -1);
+                }
+            }
         },
 
         drawJoint: function(point) {
