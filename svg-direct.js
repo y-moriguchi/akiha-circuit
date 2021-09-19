@@ -44,12 +44,12 @@ function createSvgNode(ns, type) {
             }
             result += ">\n";
 
+            if(me.textContent) {
+                result += me.textContent;
+            }
             for(i = 0; i < children.length; i++) {
                 result += children[i].toString();
                 result += "\n";
-            }
-            if(me.textContent) {
-                result += me.textContent;
             }
 
             result += "</";

@@ -182,37 +182,32 @@ function createDrawer(xMaxNodes, yMaxNodes, svg, option) {
         return result;
     }
 
-    function drawTextWithDot(canvas, text, x, y) {
+    function drawTextWithDot(canvas, text, textSub, x, y) {
         var split0size,
             split0;
 
         if(/^\.[A-Z]/.test(text)) {
             split0 = text.substring(1, text.length);
-            split0size = getTextWidth(split0, opt.fontSize);
+            split0size = getTextWidth(split0.charAt(0), opt.fontSize);
             svg.addCircle(canvas, x + split0size / 2, y - (opt.dotMargin * opt.fontSize) - opt.fontSize, opt.dotRadius, opt.stroke);
         } else {
             split0 = text;
         }
-        svg.addText(canvas, split0, x, y, opt);
+
+        if(textSub) {
+            svg.addTextWithSubscript(canvas, split0, textSub, x, y, opt, opt.fontSize, fontSubscriptSize());
+        } else {
+            svg.addText(canvas, split0, x, y, opt);
+        }
         return split0;
     }
 
     function drawTextX(canvas, textSplit, x, y) {
-        var split0;
-
-        split0 = drawTextWithDot(canvas, textSplit[0], x, y);
-        if(textSplit[1]) {
-            svg.addText(canvas, textSplit[1], x + getTextWidth(split0, opt.fontSize), y, opt, fontSubscriptSize());
-        }
+        drawTextWithDot(canvas, textSplit[0], textSplit[1], x, y);
     }
 
     function drawTextY(canvas, textSplit, x, y) {
-        var split0;
-
-        split0 = drawTextWithDot(canvas, textSplit[0], x, y);
-        if(textSplit[1]) {
-            svg.addText(canvas, textSplit[1], x + getTextWidth(split0, opt.fontSize), y, opt, fontSubscriptSize());
-        }
+        drawTextWithDot(canvas, textSplit[0], textSplit[1], x, y);
     }
 
     function getPoint(point) {

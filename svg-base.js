@@ -43,6 +43,21 @@ function createSvg(base) {
             toAdd.appendChild(node);
         },
 
+        addTextWithSubscript: function(toAdd, text, subscript, x, y, opt, size, subSize) {
+            var node = me.createNode("text"),
+                tspan = me.createNode("tspan");
+
+            node.setAttribute("x", x);
+            node.setAttribute("y", y);
+            node.setAttribute("font-family", opt.fontFamily);
+            node.setAttribute("font-size", size ? size : opt.fontSize);
+            node.textContent = text;
+            tspan.setAttribute("style", "font-size:" + subSize + ";");
+            tspan.textContent = subscript;
+            node.appendChild(tspan);
+            toAdd.appendChild(node);
+        },
+
         addCircle: function(toAdd, x, y, radius, stroke, fill) {
             var node = me.createNode("circle");
 
